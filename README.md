@@ -1,6 +1,5 @@
 Celo Network Stats
 ===============================================
-[![Build Status][travis-image]][travis-url] [![dependency status][dep-image]][dep-url]
 
 This is a visual interface for tracking proof-of-work ("mainnet") and proof-of-authority ("testnet") network status. It uses WebSockets to receive stats from running nodes and output them through an angular interface. It is the front-end implementation for [ethstats-client](https://github.com/goerli/ethstats-client).
 
@@ -40,29 +39,9 @@ grunt --configPath="src/js/someOtherConfig.js"
 ```
 
 #### Run
-Start a node process and pass the websocket secret to it.
+Start a node process and pass a trusted node to it or edit the list of trusted nodes in [the server config](/lib/utils/config.js).
 
 ```bash
-WS_SECRET="asdf" npm start
+TRUSTED_NODE=node://39a8f532a242c29bdeeeb... npm start
 ```
 Find the interface at http://localhost:3000
-
-## Proof-of-Work (Legacy)
-
-![Screenshot](src/images/screenshot-pow.png "Screenshot POW")
-
-* Demo: https://ropsten-stats.parity.io/
-
-Same as above, just run the `pow` build task in Grunt.
-
-```bash
-grunt pow
-WS_SECRET="asdf" npm start
-```
-
-:-)
-
-[travis-image]: https://travis-ci.org/goerli/ethstats-server.svg
-[travis-url]: https://travis-ci.org/goerli/ethstats-server
-[dep-image]: https://david-dm.org/goerli/ethstats-server.svg
-[dep-url]: https://david-dm.org/goerli/ethstats-server

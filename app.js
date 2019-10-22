@@ -9,6 +9,10 @@ let banned = require('./lib/utils/config').banned;
 let reserved = require('./lib/utils/config').reserved;
 let trusted = require('./lib/utils/config').trusted
 
+if (process.env.TRUSTED_NODE) {
+  trusted.push(process.env.TRUSTED_NODE)
+}
+
 // Init http server
 if (process.env.NODE_ENV !== 'production') {
   var app = require('./lib/express');
