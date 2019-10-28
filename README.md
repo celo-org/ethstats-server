@@ -42,6 +42,6 @@ grunt --configPath="src/js/someOtherConfig.js"
 Start a node process and pass a trusted node to it or edit the list of trusted nodes in [the server config](/lib/utils/config.js).
 
 ```bash
-TRUSTED_NODE=node://39a8f532a242c29bdeeeb... npm start
+TRUSTED_NODE=enode://39a8f532a242c29bdeeeb... npm start
 ```
 Find the interface at http://localhost:3000

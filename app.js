@@ -108,7 +108,7 @@ api.on('connection', function (spark) {
       || reserved.indexOf(stats.id) >= 0
       || _.isUndefined(proof)
       || _.isUndefined(proof.publicKey)
-      || trusted.indexOf(`node://${proof.publicKey.substr(4)}`) < 0
+      || trusted.indexOf(`enode://${proof.publicKey.substr(4)}`) < 0
       || !authorize(proof, stats)) {
       spark.end(undefined, { reconnect: false });
       console.error('API', 'CON', 'Closed - wrong auth', data);
@@ -253,17 +253,17 @@ api.on('connection', function (spark) {
 
       var time = chalk.reset.cyan((new Date()).toJSON()) + " ";
       console.time(time, 'COL', 'CHR', 'Got charts in');
-      Nodes.addHistory(stats.id, stats.history, function (err, history) {
-        console.timeEnd(time, 'COL', 'CHR', 'Got charts in');
-        if (err !== null) {
-          console.error('COL', 'CHR', 'History error:', err);
-        } else {
-          client.write({
-            action: 'charts',
-            data: history
-          });
-        }
-      });
+      // Nodes.addHistory(stats.id, stats.history, function (err, history) {
+      //   console.timeEnd(time, 'COL', 'CHR', 'Got charts in');
+      //   if (err !== null) {
+      //     console.error('COL', 'CHR', 'History error:', err);
+      //   } else {
+      //     client.write({
+      //       action: 'charts',
+      //       data: history
+      //     });
+      //   }
+      // });
     }
   });
 
@@ -293,11 +293,6 @@ api.on('connection', function (spark) {
         }
 
         if (latency !== null) {
-          // client.write({
-          // 	action: 'latency',
-          // 	data: latency
-          // });
-
           console.success('API', 'PIN', 'Latency:', latency, 'from:', stats.id);
         }
       });
