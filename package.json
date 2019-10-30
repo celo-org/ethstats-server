@@ -57,6 +57,6 @@
     "grunt-contrib-cssmin": "^3.0.0",
     "grunt-contrib-jade": "^1.0.0",
     "grunt-contrib-uglify": "^4.0.0",
-    "grunt-contrib-watch": "^1.1.0"  
+    "grunt-contrib-watch": "^1.1.0"
   }
 }

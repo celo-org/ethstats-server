@@ -130,8 +130,9 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
 
     switch (action) {
       case "init":
+        console.log('data', data)
         $scope.nodes = data;
-
+        console.log(data.address)
         _.forEach($scope.nodes, function (node, index) {
 
           // Init hashrate
@@ -256,7 +257,8 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
             $scope.nodes[index].stats.peers = data.stats.peers;
             $scope.nodes[index].stats.gasPrice = data.stats.gasPrice;
             $scope.nodes[index].stats.uptime = data.stats.uptime;
-
+            $scope.nodes[index].stats.address = data.stats.address;
+            console.log($scope.nodes[index].stats.address)
             if (!_.isUndefined(data.stats.latency) && _.get($scope.nodes[index], 'stats.latency', 0) !== data.stats.latency) {
               $scope.nodes[index].stats.latency = data.stats.latency;
 
@@ -308,8 +310,8 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
 
         if (!_.isEqual($scope.lastGasLimit, data.gasLimit) && data.gasLimit.length >= MAX_BINS)
           $scope.lastGasLimit = data.gasLimit;
-        console.log(data.blocktime)
-        if (!_.isEqual($scope.lastBlocksTime, data.blocktime) && data.blocktime.length >= MAX_BINS)
+        
+          if (!_.isEqual($scope.lastBlocksTime, data.blocktime) && data.blocktime.length >= MAX_BINS)
           $scope.lastBlocksTime = data.blocktime;
 
         if (!_.isEqual($scope.difficultyChart, data.difficulty) && data.difficulty.length >= MAX_BINS)

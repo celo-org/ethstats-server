@@ -14,7 +14,7 @@ This is a visual interface for tracking proof-of-work ("mainnet") and proof-of-a
 * npm
 
 #### Installation
-Make sure you have node.js and npm installed.
+Make sure you have node.js (10 or above) and npm installed.
 
 Clone the repository and install the dependencies:
 
@@ -22,7 +22,7 @@ Clone the repository and install the dependencies:
 git clone https://github.com/goerli/ethstats-server
 cd ethstats-server
 npm install
-sudo npm install -g grunt-cli
+npm install -g grunt-cli
 ```
 
 #### Build
@@ -35,7 +35,7 @@ grunt
 To build the static files for a network other than Ethereum copy and change src/js/defaultConfig.js and run the following command.
 
 ```bash
-grunt --configPath="src/js/someOtherConfig.js"
+grunt --configPath="src/js/celoConfig.js"
 ```
 
 #### Run

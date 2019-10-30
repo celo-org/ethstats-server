@@ -110,12 +110,13 @@ api.on('connection', function (spark) {
       || _.isUndefined(proof.publicKey)
       || trusted.indexOf(`enode://${proof.publicKey.substr(4)}`) < 0
       || !authorize(proof, stats)) {
+      
       spark.end(undefined, { reconnect: false });
       console.error('API', 'CON', 'Closed - wrong auth', data);
 
       return false;
     }
-
+    
     if (!_.isUndefined(stats.id) && !_.isUndefined(stats.info)) {
       stats.ip = spark.address.ip;
       stats.spark = spark.id;
@@ -131,7 +132,7 @@ api.on('connection', function (spark) {
           spark.emit('ready');
 
           console.success('API', 'CON', 'Connected', stats.id);
-
+          
           client.write({
             action: 'add',
             data: info
@@ -171,6 +172,13 @@ api.on('connection', function (spark) {
     if (authorize(proof, stats)
       && !_.isUndefined(stats.id)
       && !_.isUndefined(stats.block)) {
+
+      stats.block.validators.registered.forEach(validator => {
+        validator.registered = true
+        validator.elected = stats.block.validators.elected.indexOf(validator.address) >= 0
+        const node = Nodes.getNodeOrNew({ id: validator.address }, validator)
+        return node.name
+      })
 
       Nodes.addBlock(stats.id, stats.block, function (err, stats) {
         if (err !== null) {

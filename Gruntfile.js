@@ -65,17 +65,6 @@ module.exports = function(grunt) {
 				files: {
 					'dist/index.html': 'src/views/index.jade'
 				}
-			},
-			build_pow: {
-				options: {
-					data: {
-						debug: false,
-						pretty: true
-					}
-				},
-				files: {
-					'dist/index.html': 'src/pow/views/index.jade'
-				}
 			}
 		},
 		copy: {
@@ -110,37 +99,6 @@ module.exports = function(grunt) {
 					}
 				]
 			},
-			build_pow: {
-				files: [
-					{
-						expand: true,
-						cwd: 'src/fonts/',
-						src: ['*.*'],
-						dest: 'dist/fonts/',
-						filter: 'isFile'
-					},
-					{
-						expand: true,
-						cwd: 'src/images/',
-						src: ['*.*'],
-						dest: 'dist/',
-						filter: 'isFile'
-					},
-					{
-						expand: true,
-						cwd: 'src/pow/css/',
-						src: styles,
-						dest: 'dist/css/',
-						filter: 'isFile'
-					},
-					{
-						expand: true,
-						cwd: 'src/js/lib/',
-						src: ['*.*'],
-						dest: 'dist/js/lib'
-					}
-				]
-			}
 		},
 		cssmin: {
 			build: {

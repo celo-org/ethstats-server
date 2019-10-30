@@ -179,7 +179,18 @@ angular.module('netStatsApp.filters', [])
 		if(hash.substr(0,2) === '0x')
 			hash = hash.substr(2,64);
 
-		return hash.substr(0, 8) + '...' + hash.substr(56, 8);
+		return hash.substr(0, 8) + '..' + hash.substr(56, 8);
+	}
+})
+.filter('addressFilter', function() {
+	return function(address) {
+		if(typeof address === 'undefined')
+			return "?";
+
+		if(address.substr(0,2) === '0x')
+			address = address.substr(2,40);
+
+		return address.substr(0, 4) + '..' + address.substr(36, 4);
 	}
 })
 .filter('timeClass', function() {
