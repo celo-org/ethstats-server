@@ -175,8 +175,9 @@ api.on('connection', function (spark) {
 
       stats.block.validators.registered.forEach(validator => {
         validator.registered = true
-        validator.elected = stats.block.validators.elected.indexOf(validator.address) >= 0
         const node = Nodes.getNodeOrNew({ id: validator.address }, validator)
+        // TODO: only if new node
+        node.setValidatorData(validator)
         return node.name
       })
 

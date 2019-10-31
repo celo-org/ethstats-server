@@ -205,8 +205,8 @@ span.small-title span.small {
 }
 
 .big-info.chart {
-	height: 120px;
-	-webkit-box-sizing: border-box
+	height: 130px;
+	-webkit-box-sizing: border-box;
 	box-sizing: border-box;
 }
 
@@ -354,7 +354,15 @@ nodepropagchart {
 }
 
 .th-nodename {
-	width: 300px;
+	width: 200px;
+}
+
+.nodeInfo {
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.nodeInfo>span {
 	text-overflow: ellipsis;
 }
 

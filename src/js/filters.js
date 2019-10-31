@@ -182,15 +182,19 @@ angular.module('netStatsApp.filters', [])
 		return hash.substr(0, 8) + '..' + hash.substr(56, 8);
 	}
 })
+.filter('nameFilter', function() {
+	return function(name) {
+		if(typeof name === 'undefined')
+			return "?";
+		return name.substr(0, 30) + '..';
+	}
+})
 .filter('addressFilter', function() {
 	return function(address) {
 		if(typeof address === 'undefined')
 			return "?";
 
-		if(address.substr(0,2) === '0x')
-			address = address.substr(2,40);
-
-		return address.substr(0, 4) + '..' + address.substr(36, 4);
+		return address.substr(0, 10) + '..';
 	}
 })
 .filter('timeClass', function() {
