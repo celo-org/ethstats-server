@@ -125,14 +125,9 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
     // filter data
     data = xssFilter(data);
 
-    // console.log('Action: ', action);
-    // console.log('Data: ', data);
-
     switch (action) {
       case "init":
-        console.log('data', data)
         $scope.nodes = data;
-        console.log(data.address)
         _.forEach($scope.nodes, function (node, index) {
 
           // Init hashrate

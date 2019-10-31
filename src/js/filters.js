@@ -407,6 +407,11 @@ angular.module('netStatsApp.filters', [])
 		return blockTimeClass(time);
 	}
 })
+.filter('blocksInEpochClass', function() {
+	return function(blocks, epochSize) {
+		return blockTimeClass(Math.round(40*(1-blocks/epochSize)));
+	}
+})
 .filter('upTimeFilter', function() {
 	return function(uptime) {
 		return Math.round(uptime) + '%';
