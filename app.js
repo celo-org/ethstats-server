@@ -87,6 +87,10 @@ const authorize = (proof, stats) => {
       r: proof.signature.substr(2, 64),
       s: proof.signature.substr(66, 64)
     }
+    if (!(msgHash === proof.msgHash.substr(2))) {
+      console.error('API', 'SIG', 'Hash did not match', msgHash, proof.msgHash.substr(2))
+      return false
+    }
     isAuthorized = pubkey.verify(msgHash, signature)
   }
   if (!isAuthorized) {
@@ -172,14 +176,16 @@ api.on('connection', function (spark) {
     if (authorize(proof, stats)
       && !_.isUndefined(stats.id)
       && !_.isUndefined(stats.block)) {
-
-      stats.block.validators.registered.forEach(validator => {
-        validator.registered = true
-        const node = Nodes.getNodeOrNew({ id: validator.address }, validator)
-        // TODO: only if new node
-        node.setValidatorData(validator)
-        return node.name
-      })
+      
+      if (stats.block.validators && stats.block.validators.registered) {
+        stats.block.validators.registered.forEach(validator => {
+          validator.registered = true
+          const node = Nodes.getNodeOrNew({ id: validator.address }, validator)
+          // TODO: only if new node
+          node.setValidatorData(validator)
+          return node.name
+        })
+      }
 
       Nodes.addBlock(stats.id, stats.block, function (err, stats) {
         if (err !== null) {
