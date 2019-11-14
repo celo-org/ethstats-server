@@ -81,17 +81,35 @@ const authorize = (proof, stats) => {
     const hasher = new Keccak(256)
     hasher.update(JSON.stringify(stats))
     const msgHash = hasher.digest('hex')
-    const ec = new EC('secp256k1');
-    const pubkey = ec.keyFromPublic(proof.publicKey.substr(2), 'hex')
+    const ec = new EC('secp256k1')
+    const pubkeyNoZeroX = proof.publicKey.substr(2)
+    let pubkey
+    try {
+      pubkey = ec.keyFromPublic(pubkeyNoZeroX, 'hex')
+    } catch (e) {
+      console.error('API', 'SIG', 'Public Key Error', e.message)
+      return false
+    }
+    const addressHasher = new Keccak(256)
+    addressHasher.update(pubkeyNoZeroX.substr(2), 'hex')
+    const addressHash = addressHasher.digest("hex").substr(24)
+    if (!(addressHash === proof.address.substr(2))) {
+      console.error('API', 'SIG', 'Address hash did not match', addressHash, proof.address.substr(2))
+    }
     const signature = {
       r: proof.signature.substr(2, 64),
       s: proof.signature.substr(66, 64)
     }
     if (!(msgHash === proof.msgHash.substr(2))) {
-      console.error('API', 'SIG', 'Hash did not match', msgHash, proof.msgHash.substr(2))
+      console.error('API', 'SIG', 'Message hash did not match', msgHash, proof.msgHash.substr(2))
       return false
     }
-    isAuthorized = pubkey.verify(msgHash, signature)
+    try {
+      isAuthorized = pubkey.verify(msgHash, signature)
+    } catch (e) {
+      console.error('API', 'SIG', 'Signature Error', e.message)
+      return false
+    }
   }
   if (!isAuthorized) {
     console.error('API', 'SIG', 'Signature did not verify')
@@ -112,7 +130,7 @@ api.on('connection', function (spark) {
       || reserved.indexOf(stats.id) >= 0
       || _.isUndefined(proof)
       || _.isUndefined(proof.publicKey)
-      || trusted.indexOf(`enode://${proof.publicKey.substr(4)}`) < 0
+      || trusted.indexOf(proof.address) < 0
       || !authorize(proof, stats)) {
       
       spark.end(undefined, { reconnect: false });
