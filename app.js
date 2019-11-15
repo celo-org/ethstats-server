@@ -93,7 +93,7 @@ const authorize = (proof, stats) => {
     const addressHasher = new Keccak(256)
     addressHasher.update(pubkeyNoZeroX.substr(2), 'hex')
     const addressHash = addressHasher.digest("hex").substr(24)
-    if (!(addressHash === proof.address.substr(2))) {
+    if (!(addressHash.toLowerCase() === proof.address.substr(2).toLowerCase())) {
       console.error('API', 'SIG', 'Address hash did not match', addressHash, proof.address.substr(2))
     }
     const signature = {
@@ -130,7 +130,7 @@ api.on('connection', function (spark) {
       || reserved.indexOf(stats.id) >= 0
       || _.isUndefined(proof)
       || _.isUndefined(proof.publicKey)
-      || trusted.indexOf(proof.address) < 0
+      || trusted.map(address => address.toLowerCase()).indexOf(proof.address) < 0
       || !authorize(proof, stats)) {
       
       spark.end(undefined, { reconnect: false });
