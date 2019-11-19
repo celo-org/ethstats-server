@@ -77,7 +77,11 @@ const authorize = (proof, stats) => {
   if (!_.isUndefined(proof)
     && !_.isUndefined(proof.publicKey)
     && !_.isUndefined(proof.signature)
-    && !_.isUndefined(stats)) {
+    && !_.isUndefined(stats)
+    && !_.isUndefined(stats.id)
+    && reserved.indexOf(stats.id) < 0
+    && trusted.map(address => address.toLowerCase()).indexOf(proof.address) >= 0
+  ) {
     const hasher = new Keccak(256)
     hasher.update(JSON.stringify(stats))
     const msgHash = hasher.digest('hex')
@@ -106,13 +110,16 @@ const authorize = (proof, stats) => {
     }
     try {
       isAuthorized = pubkey.verify(msgHash, signature)
+      if (!isAuthorized) {
+        throw new Error("Signature did not verify")
+      }
     } catch (e) {
       console.error('API', 'SIG', 'Signature Error', e.message)
       return false
     }
   }
   if (!isAuthorized) {
-    console.error('API', 'SIG', 'Signature did not verify')
+    console.error('API', 'SIG', 'Not authorized')
   }
   return isAuthorized
 }
@@ -124,24 +131,20 @@ api.on('connection', function (spark) {
 
   spark.on('hello', function (data) {
     const { stats, proof } = data
-    console.info('API', 'CON', 'Hello', stats['id']);
     if (banned.indexOf(spark.address.ip) >= 0
-      || _.isUndefined(stats.id)
-      || reserved.indexOf(stats.id) >= 0
-      || _.isUndefined(proof)
-      || _.isUndefined(proof.publicKey)
-      || trusted.map(address => address.toLowerCase()).indexOf(proof.address) < 0
       || !authorize(proof, stats)) {
-      
       spark.end(undefined, { reconnect: false });
       console.error('API', 'CON', 'Closed - wrong auth', data);
-
       return false;
     }
-    
-    if (!_.isUndefined(stats.id) && !_.isUndefined(stats.info)) {
-      stats.ip = spark.address.ip;
-      stats.spark = spark.id;
+    console.log("HELLLOOOOO", data, stats.id, spark.id)
+    console.info('API', 'CON', 'Hello', stats.id);
+
+    if (!_.isUndefined(stats.info)) {
+      stats.ip = spark.address.ip
+      stats.id = proof.address
+      stats.address = proof.address
+      stats.spark = spark.id
       stats.latency = spark.latency || 0;
 
       Nodes.add(stats, function (err, info) {
@@ -192,7 +195,6 @@ api.on('connection', function (spark) {
   spark.on('block', function (data) {
     const { stats, proof } = data
     if (authorize(proof, stats)
-      && !_.isUndefined(stats.id)
       && !_.isUndefined(stats.block)) {
       
       if (stats.block.validators && stats.block.validators.registered) {
@@ -233,7 +235,6 @@ api.on('connection', function (spark) {
   spark.on('pending', function (data) {
     const { stats, proof } = data
     if (authorize(proof, stats)
-      && !_.isUndefined(stats.id)
       && !_.isUndefined(stats.stats)) {
       Nodes.updatePending(stats.id, stats.stats, function (err, pending) {
         if (err !== null) {
@@ -258,7 +259,6 @@ api.on('connection', function (spark) {
   spark.on('stats', function (data) {
     const { stats, proof } = data
     if (authorize(proof, stats)
-      && !_.isUndefined(stats.id)
       && !_.isUndefined(stats.stats)) {
 
       Nodes.updateStats(stats.id, stats.stats, function (err, stats) {
@@ -304,14 +304,15 @@ api.on('connection', function (spark) {
   spark.on('node-ping', function (data) {
     const { stats, proof } = data
     if (authorize(proof, stats)) {
-      const start = (!_.isUndefined(stats) && !_.isUndefined(stats.clientTime) ? stats.clientTime : null);
+      stats.id = proof.address
+      const start = (!_.isUndefined(stats.clientTime) ? stats.clientTime : null);
 
       spark.emit('node-pong', {
         clientTime: start,
         serverTime: _.now()
       });
 
-      console.success('API', 'PIN', 'Ping from:', stats['id']);
+      console.success('API', 'PIN', 'Ping from:', stats.id);
     }
   });
 
@@ -345,7 +346,7 @@ api.on('connection', function (spark) {
   spark.on('end', function (data) {
     Nodes.inactive(spark.id, function (err, stats) {
       if (err !== null) {
-        console.error('API', 'CON', 'Connection end error:', err);
+        console.error('API', 'CON', 'Connection with:', spark.address.ip, spark.id, 'end error:', err, '(try unlocking account)');
       } else {
         client.write({
           action: 'inactive',
