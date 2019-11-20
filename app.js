@@ -137,7 +137,6 @@ api.on('connection', function (spark) {
       console.error('API', 'CON', 'Closed - wrong auth', data);
       return false;
     }
-    console.log("HELLLOOOOO", data, stats.id, spark.id)
     console.info('API', 'CON', 'Hello', stats.id);
 
     if (!_.isUndefined(stats.info)) {
@@ -196,7 +195,7 @@ api.on('connection', function (spark) {
     const { stats, proof } = data
     if (authorize(proof, stats)
       && !_.isUndefined(stats.block)) {
-      
+      stats.id = proof.address
       if (stats.block.validators && stats.block.validators.registered) {
         stats.block.validators.registered.forEach(validator => {
           validator.registered = true
@@ -236,6 +235,7 @@ api.on('connection', function (spark) {
     const { stats, proof } = data
     if (authorize(proof, stats)
       && !_.isUndefined(stats.stats)) {
+      stats.id = proof.address
       Nodes.updatePending(stats.id, stats.stats, function (err, pending) {
         if (err !== null) {
           console.error('API', 'TXS', 'Pending error:', err);
@@ -260,7 +260,7 @@ api.on('connection', function (spark) {
     const { stats, proof } = data
     if (authorize(proof, stats)
       && !_.isUndefined(stats.stats)) {
-
+      stats.id = proof.address
       Nodes.updateStats(stats.id, stats.stats, function (err, stats) {
         if (err !== null) {
           console.error('API', 'STA', 'Stats error:', err);
@@ -283,7 +283,7 @@ api.on('connection', function (spark) {
     const { stats, proof } = data
     if (authorize(proof, stats)) {
       console.success('API', 'HIS', 'Got history from:', stats.id);
-
+      stats.id = proof.address
       var time = chalk.reset.cyan((new Date()).toJSON()) + " ";
       console.time(time, 'COL', 'CHR', 'Got charts in');
       // Nodes.addHistory(stats.id, stats.history, function (err, history) {
@@ -319,8 +319,8 @@ api.on('connection', function (spark) {
 
   spark.on('latency', function (data) {
     const { stats, proof } = data
-    if (authorize(proof, stats)
-      && !_.isUndefined(stats.id)) {
+    if (authorize(proof, stats)) {
+      stats.id = proof.address
       Nodes.updateLatency(stats.id, stats.latency, function (err, latency) {
         if (err !== null) {
           console.error('API', 'PIN', 'Latency error:', err);
