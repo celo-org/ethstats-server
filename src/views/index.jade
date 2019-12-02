@@ -107,7 +107,7 @@ block content
           div.blocks-holder(ng-repeat='miner in miners | limitTo:5 track by miner.number', data-toggle="tooltip", data-placement="right", data-original-title="{{miner.number}}")
             span.block-count(ng-bind-html="miner.number | blockNumberFilter")
             span.miner-address(ng-bind-html="miner.miner | addressFilter")
-            span.miner-history(ng-bind-html="miners | limitTo:24 | minerHistoryFilter : miner")
+            span.miner-history(ng-bind-html="miners | limitTo:22 | minerHistoryFilter : miner")
             div.clearfix
       div.clearfix
 

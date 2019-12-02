@@ -286,6 +286,7 @@ span.small-title span.small {
 .blocks-holder {
 	font-family: 'Lucida Console', "Courier New", Courier, monospace;
 	font-size: 10px;
+	padding-right: 10px;
 }
 
 .blocks-holder .block-count{
@@ -293,14 +294,14 @@ span.small-title span.small {
 }
 
 .blocks-holder .miner-address {
-	padding-left: 5px;
+	padding-left: 10px;
 }
 
 
 .blocks-holder .block {
 	width: 6px;
 	height: 6px;
-	margin: 2px 1px 6px 0px;
+	margin: 2px 1px 7px 0px;
 	float: right;
 	-webkit-border-radius: 1px;
 	border-radius: 1px;
