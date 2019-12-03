@@ -85,7 +85,8 @@ const authorize = (proof, stats) => {
     && !_.isUndefined(proof.publicKey)
     && !_.isUndefined(proof.signature)
     && reserved.indexOf(stats.id) < 0
-    && trusted.map(address => address.toLowerCase()).indexOf(proof.address) >= 0
+    && trusted.map(address => address && address.toLowerCase())
+      .indexOf(proof.address) >= 0
   ) {
     const hasher = new Keccak(256)
     hasher.update(JSON.stringify(stats))
@@ -187,9 +188,9 @@ api.on('connection', function (spark) {
         stats.block.validators.registered.forEach(validator => {
           validator.registered = true
           // trust registered validators and signers - not safe
-          if (~trusted.indexOf(validator.address))
+          if (validator.signer.address && ~trusted.indexOf(validator.address))
             trusted.push(validator.address)
-          if (validator.signer && ~trusted.indexOf(validator.address))
+          if (validator.signer && ~trusted.indexOf(validator.signer))
             trusted.push(validator.signer.address)
           const search = { id: validator.address }
           const index = Nodes.getIndex(search)
