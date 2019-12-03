@@ -72,13 +72,18 @@ Nodes.setChartsCallback(function (err, charts) {
   }
 });
 
+const sanitize = stats => {
+  return (
+    !_.isUndefined(stats)
+    && !_.isUndefined(stats.id)
+  )}
+
 const authorize = (proof, stats) => {
   let isAuthorized = false
-  if (!_.isUndefined(proof)
+  if (sanitize(stats)
+    && !_.isUndefined(proof)
     && !_.isUndefined(proof.publicKey)
     && !_.isUndefined(proof.signature)
-    && !_.isUndefined(stats)
-    && !_.isUndefined(stats.id)
     && reserved.indexOf(stats.id) < 0
     && trusted.map(address => address.toLowerCase()).indexOf(proof.address) >= 0
   ) {
@@ -124,6 +129,13 @@ const authorize = (proof, stats) => {
   return isAuthorized
 }
 
+api.on('error', function error(err) {
+  console.error('Something horrible has happened', err.stack);
+});
+
+api.on('reconnect', function (opts) {
+  console.error('Reconnection attempt started', opts);
+});
 
 // Init API Socket events
 api.on('connection', function (spark) {
@@ -166,40 +178,19 @@ api.on('connection', function (spark) {
     }
   });
 
-
-  spark.on('update', function (data) {
-    if (!_.isUndefined(data.id) && !_.isUndefined(data.stats)) {
-      Nodes.update(data.id, data.stats, function (err, stats) {
-        if (err !== null) {
-          console.error('API', 'UPD', 'Update error:', err);
-        } else {
-          if (stats !== null) {
-            client.write({
-              action: 'update',
-              data: stats
-            });
-
-            console.info('API', 'UPD', 'Update from:', data.id, 'for:', stats);
-
-            Nodes.getCharts();
-          }
-        }
-      });
-    } else {
-      console.error('API', 'UPD', 'Update error:', data);
-    }
-  });
-
-
   spark.on('block', function (data) {
     const { stats, proof } = data
-    if (authorize(proof, stats)
+    if (sanitize(stats)
       && !_.isUndefined(stats.block)) {
       stats.id = proof.address
       if (stats.block.validators && stats.block.validators.registered) {
         stats.block.validators.registered.forEach(validator => {
           validator.registered = true
-          trusted.push(validator.address)
+          // trust registered validators and signers - not safe
+          if (~trusted.indexOf(validator.address))
+            trusted.push(validator.address)
+          if (validator.signer && ~trusted.indexOf(validator.address))
+            trusted.push(validator.signer.address)
           const search = { id: validator.address }
           const index = Nodes.getIndex(search)
           const node = Nodes.getNodeOrNew(search, validator)
@@ -243,7 +234,7 @@ api.on('connection', function (spark) {
 
   spark.on('pending', function (data) {
     const { stats, proof } = data
-    if (authorize(proof, stats)
+    if (sanitize(stats)
       && !_.isUndefined(stats.stats)) {
       stats.id = proof.address
       Nodes.updatePending(stats.id, stats.stats, function (err, pending) {
@@ -268,7 +259,7 @@ api.on('connection', function (spark) {
 
   spark.on('stats', function (data) {
     const { stats, proof } = data
-    if (authorize(proof, stats)
+    if (sanitize(stats)
       && !_.isUndefined(stats.stats)) {
       stats.id = proof.address
       Nodes.updateStats(stats.id, stats.stats, function (err, stats) {
@@ -291,29 +282,13 @@ api.on('connection', function (spark) {
 
   spark.on('history', function (data) {
     const { stats, proof } = data
-    if (authorize(proof, stats)) {
-      console.success('API', 'HIS', 'Got history from:', stats.id);
-      stats.id = proof.address
-      var time = chalk.reset.cyan((new Date()).toJSON()) + " ";
-      console.time(time, 'COL', 'CHR', 'Got charts in');
-      // Nodes.addHistory(stats.id, stats.history, function (err, history) {
-      //   console.timeEnd(time, 'COL', 'CHR', 'Got charts in');
-      //   if (err !== null) {
-      //     console.error('COL', 'CHR', 'History error:', err);
-      //   } else {
-      //     client.write({
-      //       action: 'charts',
-      //       data: history
-      //     });
-      //   }
-      // });
-    }
+    console.success('API', 'HIS', 'Got history from:', stats.id);
   });
 
 
   spark.on('node-ping', function (data) {
     const { stats, proof } = data
-    if (authorize(proof, stats)) {
+    if (sanitize(stats)) {
       stats.id = proof.address
       const start = (!_.isUndefined(stats.clientTime) ? stats.clientTime : null);
 
@@ -329,7 +304,7 @@ api.on('connection', function (spark) {
 
   spark.on('latency', function (data) {
     const { stats, proof } = data
-    if (authorize(proof, stats)) {
+    if (sanitize(stats)) {
       stats.id = proof.address
       Nodes.updateLatency(stats.id, stats.latency, function (err, latency) {
         if (err !== null) {
