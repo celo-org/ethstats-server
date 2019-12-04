@@ -174,29 +174,6 @@ api.on('connection', (spark) => {
     }
   })
 
-  spark.on('update', (data) => {
-    if (!_.isUndefined(data.id) && !_.isUndefined(data.stats)) {
-      Nodes.update(data.id, data.stats, (err, stats) => {
-        if (err) {
-          console.error('API', 'UPD', 'Update error:', err)
-        } else {
-          if (stats) {
-            client.write({
-              action: 'update',
-              data: stats
-            })
-
-            console.info('API', 'UPD', 'Update from:', data.id, 'for:', stats)
-
-            Nodes.getCharts()
-          }
-        }
-      })
-    } else {
-      console.error('API', 'UPD', 'Update error:', data)
-    }
-  })
-
   spark.on('block', (data) => {
     const { stats, proof } = data
     if (sanitize(stats)
