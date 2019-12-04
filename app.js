@@ -76,7 +76,8 @@ const sanitize = stats => {
   return (
     !_.isUndefined(stats)
     && !_.isUndefined(stats.id)
-  )}
+  )
+}
 
 const authorize = (proof, stats) => {
   let isAuthorized = false
