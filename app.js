@@ -335,10 +335,12 @@ api.on('connection', (spark) => {
       if (Nodes.requiresUpdate(stats.id)) {
         const range = Nodes.getHistory().getHistoryRequestRange()
 
-        spark.emit('history', range)
-        console.success('API', 'HIS', 'Asked:', stats.id, 'for history:', range.min, '-', range.max)
+        if (range) {
+          spark.emit('history', range)
+          console.success('API', 'HIS', 'Asked:', stats.id, 'for history:', range.min, '-', range.max)
 
-        Nodes.askedForHistory(true)
+          Nodes.askedForHistory(true)
+        }
       }
     }
   })
