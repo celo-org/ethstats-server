@@ -188,10 +188,12 @@ api.on('connection', function (spark) {
         stats.block.validators.registered.forEach(validator => {
           validator.registered = true
           // trust registered validators and signers - not safe
-          if (validator.signer.address && ~trusted.indexOf(validator.address))
+          if (validator.address && trusted.indexOf(validator.address) === -1) {
             trusted.push(validator.address)
-          if (validator.signer && ~trusted.indexOf(validator.signer))
-            trusted.push(validator.signer.address)
+          }
+          if (validator.signer && trusted.indexOf(validator.signer) === -1) {
+            trusted.push(validator.signer)
+          }
           const search = { id: validator.address }
           const index = Nodes.getIndex(search)
           const node = Nodes.getNodeOrNew(search, validator)
