@@ -133,6 +133,24 @@ const authorize = (proof, stats) => {
   return isAuthorized
 }
 
+const nodesCache = {};
+const blockCache = {};
+
+setTimeout(() => {
+  const data = Object.values(nodesCache).map(node => {
+    const ret = node;
+    if (blockCache[node.id]) {
+      ret.stats.block = blockCache[node.id].block;
+      ret.stats.propagationAvg = blockCache[node.id].propagationAvg;
+    }
+    return ret;
+  });
+  client.write({
+    action: "allData",
+    data
+  });
+}, 3000);
+
 // Init API Socket events
 api.on('connection', (spark) => {
   console.info('API', 'CON', 'Open:', spark.address.ip)
@@ -209,10 +227,11 @@ api.on('connection', (spark) => {
         if (err) {
           console.error('API', 'BLK', 'Block error:', err, updatedStats)
         } else if (updatedStats) {
-          client.write({
-            action: 'block',
-            data: updatedStats
-          })
+          // client.write({
+          //   action: 'block',
+          //   data: updatedStats
+          // })
+          blockCache[stats.id] = stats;
 
           console.success('API', 'BLK',
             'Block:', updatedStats.block['number'],
@@ -261,10 +280,11 @@ api.on('connection', (spark) => {
           console.error('API', 'STA', 'Stats error:', err)
         } else {
           if (stats) {
-            client.write({
-              action: 'stats',
-              data: stats
-            })
+            // client.write({
+            //   action: 'stats',
+            //   data: stats
+            // })
+            nodesCache[stats.id] = stats;
 
             console.success('API', 'STA', 'Stats from:', stats.id)
           }
