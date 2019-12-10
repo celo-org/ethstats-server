@@ -431,6 +431,14 @@ netStatsApp.controller("StatsCtrl", function(
         });
 
         break;
+
+      case "allData":
+        $scope.nodes = data.nodes;
+
+        updateActiveNodes();
+        updateBestBlock();
+
+        break;
     }
 
     // $scope.$apply();

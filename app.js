@@ -135,6 +135,24 @@ const authorize = (proof, stats) => {
   return isAuthorized;
 };
 
+const nodesCache = {};
+const blockCache = {};
+
+setTimeout(() => {
+  const data = Object.values(nodesCache).map(node => {
+    const ret = node;
+    if (blockCache[node.id]) {
+      ret.stats.block = blockCache[node.id].block;
+      ret.stats.propagationAvg = blockCache[node.id].propagationAvg;
+    }
+    return ret;
+  });
+  client.write({
+    action: "allData",
+    data
+  });
+}, 3000);
+
 // Init API Socket events
 api.on("connection", function(spark) {
   console.info("API", "CON", "Open:", spark.address.ip);
@@ -227,10 +245,12 @@ api.on("connection", function(spark) {
           console.error("API", "BLK", "Block error:", err);
         } else {
           if (stats !== null) {
-            client.write({
-              action: "block",
-              data: stats
-            });
+            // client.write({
+            //   action: 'block',
+            //   data: stats
+            // });
+
+            blockCache[stats.id] = stats;
 
             console.success(
               "API",
@@ -293,10 +313,12 @@ api.on("connection", function(spark) {
           console.error("API", "STA", "Stats error:", err);
         } else {
           if (stats !== null) {
-            client.write({
-              action: "stats",
-              data: stats
-            });
+            // client.write({
+            //   action: 'stats',
+            //   data: stats
+            // });
+
+            nodesCache[stats.id] = stats;
 
             console.success("API", "STA", "Stats from:", stats.id);
           }
