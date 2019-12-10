@@ -1,12 +1,19 @@
 /* Controllers */
-netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, socket, _, toastr) {
-
+netStatsApp.controller("StatsCtrl", function(
+  $scope,
+  $filter,
+  $localStorage,
+  socket,
+  _,
+  toastr
+) {
   var MAX_BINS = 40;
 
   // Main Stats init
   // ---------------
 
-  $scope.frontierHash = '0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa';
+  $scope.frontierHash =
+    "0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa";
   $scope.nodesTotal = 0;
   $scope.nodesActive = 0;
   $scope.bestBlock = 0;
@@ -26,10 +33,9 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
   $scope.gasSpending = _.fill(Array(MAX_BINS), 2);
   $scope.miners = [];
   $scope.validators = {
-    'elected': [],
-    'registered': []
+    elected: [],
+    registered: []
   };
-
 
   $scope.nodes = [];
   $scope.map = [];
@@ -41,14 +47,19 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
 
   $scope.currentApiVersion = "0.1.1";
 
-  $scope.predicate = $localStorage.predicate || ['-pinned', '-stats.active', '-stats.block.number', 'stats.block.propagation'];
+  $scope.predicate = $localStorage.predicate || [
+    "-pinned",
+    "-stats.active",
+    "-stats.block.number",
+    "stats.block.propagation"
+  ];
   $scope.reverse = $localStorage.reverse || false;
   $scope.pinned = $localStorage.pinned || [];
 
-  $scope.prefixPredicate = ['-pinned', '-stats.active'];
-  $scope.originalPredicate = ['-stats.block.number', 'stats.block.propagation'];
+  $scope.prefixPredicate = ["-pinned", "-stats.active"];
+  $scope.originalPredicate = ["-stats.block.number", "stats.block.propagation"];
 
-  $scope.orderTable = function (predicate, reverse) {
+  $scope.orderTable = function(predicate, reverse) {
     if (!_.isEqual(predicate, $scope.originalPredicate)) {
       $scope.reverse = reverse;
       $scope.originalPredicate = predicate;
@@ -57,8 +68,9 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
       $scope.reverse = !$scope.reverse;
 
       if ($scope.reverse === true) {
-        _.forEach(predicate, function (value, key) {
-          predicate[key] = (value[0] === '-' ? value.replace('-', '') : '-' + value);
+        _.forEach(predicate, function(value, key) {
+          predicate[key] =
+            value[0] === "-" ? value.replace("-", "") : "-" + value;
         });
       }
 
@@ -67,9 +79,9 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
 
     $localStorage.predicate = $scope.predicate;
     $localStorage.reverse = $scope.reverse;
-  }
+  };
 
-  $scope.pinNode = function (id) {
+  $scope.pinNode = function(id) {
     index = findIndex({ id: id });
 
     if (!_.isUndefined($scope.nodes[index])) {
@@ -83,43 +95,44 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
     }
 
     $localStorage.pinned = $scope.pinned;
-  }
+  };
 
-  var timeout = setInterval(function () {
+  var timeout = setInterval(function() {
     $scope.$apply();
   }, 300);
 
-  $scope.getNumber = function (num) {
+  $scope.getNumber = function(num) {
     return new Array(num);
-  }
+  };
 
   // Socket listeners
   // ----------------
 
-  socket.on('open', function open() {
-    socket.emit('ready');
-    console.log('The connection has been opened.');
-  })
-    .on('end', function end() {
-      console.log('Socket connection ended.')
+  socket
+    .on("open", function open() {
+      socket.emit("ready");
+      console.log("The connection has been opened.");
     })
-    .on('error', function error(err) {
+    .on("end", function end() {
+      console.log("Socket connection ended.");
+    })
+    .on("error", function error(err) {
       console.log(err);
     })
-    .on('reconnecting', function reconnecting(opts) {
-      console.log('We are scheduling a reconnect operation', opts);
+    .on("reconnecting", function reconnecting(opts) {
+      console.log("We are scheduling a reconnect operation", opts);
     })
-    .on('data', function incoming(data) {
+    .on("data", function incoming(data) {
       $scope.$apply(socketAction(data.action, data.data));
     });
 
-  socket.on('init', function (data) {
+  socket.on("init", function(data) {
     $scope.$apply(socketAction("init", data.nodes));
   });
 
-  socket.on('client-latency', function (data) {
+  socket.on("client-latency", function(data) {
     $scope.latency = data.latency;
-  })
+  });
 
   function socketAction(action, data) {
     // filter data
@@ -128,11 +141,9 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
     switch (action) {
       case "init":
         $scope.nodes = data;
-        _.forEach($scope.nodes, function (node, index) {
-
+        _.forEach($scope.nodes, function(node, index) {
           // Init hashrate
-          if (_.isUndefined(node.stats.hashrate))
-            node.stats.hashrate = 0;
+          if (_.isUndefined(node.stats.hashrate)) node.stats.hashrate = 0;
 
           // Init latency
           latencyFilter(node);
@@ -144,11 +155,11 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
           }
 
           // Init or recover pin
-          node.pinned = ($scope.pinned.indexOf(node.id) >= 0 ? true : false);
+          node.pinned = $scope.pinned.indexOf(node.id) >= 0 ? true : false;
         });
 
         if ($scope.nodes.length > 0) {
-          toastr['success']("Got nodes list", "Got nodes!");
+          toastr["success"]("Got nodes list", "Got nodes!");
 
           updateActiveNodes();
         }
@@ -169,15 +180,20 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
       case "update":
         var index = findIndex({ id: data.id });
 
-        if (index >= 0 && !_.isUndefined($scope.nodes[index]) && !_.isUndefined($scope.nodes[index].stats)) {
+        if (
+          index >= 0 &&
+          !_.isUndefined($scope.nodes[index]) &&
+          !_.isUndefined($scope.nodes[index].stats)
+        ) {
           if (!_.isUndefined($scope.nodes[index].stats.latency))
             data.stats.latency = $scope.nodes[index].stats.latency;
 
-          if (_.isUndefined(data.stats.hashrate))
-            data.stats.hashrate = 0;
+          if (_.isUndefined(data.stats.hashrate)) data.stats.hashrate = 0;
 
-          if ($scope.nodes[index].stats.block.number < data.stats.block.number) {
-            var best = _.max($scope.nodes, function (node) {
+          if (
+            $scope.nodes[index].stats.block.number < data.stats.block.number
+          ) {
+            var best = _.max($scope.nodes, function(node) {
               return parseInt(node.stats.block.number);
             }).stats.block;
 
@@ -191,7 +207,11 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
 
           $scope.nodes[index].stats = data.stats;
 
-          if (!_.isUndefined(data.stats.latency) && _.get($scope.nodes[index], 'stats.latency', 0) !== data.stats.latency) {
+          if (
+            !_.isUndefined(data.stats.latency) &&
+            _.get($scope.nodes[index], "stats.latency", 0) !==
+              data.stats.latency
+          ) {
             $scope.nodes[index].stats.latency = data.stats.latency;
 
             latencyFilter($scope.nodes[index]);
@@ -205,9 +225,13 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
       case "block":
         var index = findIndex({ id: data.id });
 
-        if (index >= 0 && !_.isUndefined($scope.nodes[index]) && !_.isUndefined($scope.nodes[index].stats)) {
+        if (
+          index >= 0 &&
+          !_.isUndefined($scope.nodes[index]) &&
+          !_.isUndefined($scope.nodes[index].stats)
+        ) {
           if ($scope.nodes[index].stats.block.number < data.block.number) {
-            var best = _.max($scope.nodes, function (node) {
+            var best = _.max($scope.nodes, function(node) {
               return parseInt(node.stats.block.number);
             }).stats.block;
 
@@ -233,7 +257,11 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
         if (!_.isUndefined(data.id) && index >= 0) {
           var node = $scope.nodes[index];
 
-          if (!_.isUndefined(node) && !_.isUndefined(node.stats.pending) && !_.isUndefined(data.pending))
+          if (
+            !_.isUndefined(node) &&
+            !_.isUndefined(node.stats.pending) &&
+            !_.isUndefined(data.pending)
+          )
             $scope.nodes[index].stats.pending = data.pending;
         }
 
@@ -253,7 +281,11 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
             $scope.nodes[index].stats.gasPrice = data.stats.gasPrice;
             $scope.nodes[index].stats.uptime = data.stats.uptime;
             $scope.nodes[index].stats.address = data.stats.address;
-            if (!_.isUndefined(data.stats.latency) && _.get($scope.nodes[index], 'stats.latency', 0) !== data.stats.latency) {
+            if (
+              !_.isUndefined(data.stats.latency) &&
+              _.get($scope.nodes[index], "stats.latency", 0) !==
+                data.stats.latency
+            ) {
               $scope.nodes[index].stats.latency = data.stats.latency;
 
               latencyFilter($scope.nodes[index]);
@@ -302,31 +334,53 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
         if (!_.isEqual($scope.avgHashrate, data.avgHashrate))
           $scope.avgHashrate = data.avgHashrate;
 
-        if (!_.isEqual($scope.lastGasLimit, data.gasLimit) && data.gasLimit.length >= MAX_BINS)
+        if (
+          !_.isEqual($scope.lastGasLimit, data.gasLimit) &&
+          data.gasLimit.length >= MAX_BINS
+        )
           $scope.lastGasLimit = data.gasLimit;
-        
-          if (!_.isEqual($scope.lastBlocksTime, data.blocktime) && data.blocktime.length >= MAX_BINS)
+
+        if (
+          !_.isEqual($scope.lastBlocksTime, data.blocktime) &&
+          data.blocktime.length >= MAX_BINS
+        )
           $scope.lastBlocksTime = data.blocktime;
 
-        if (!_.isEqual($scope.difficultyChart, data.difficulty) && data.difficulty.length >= MAX_BINS)
+        if (
+          !_.isEqual($scope.difficultyChart, data.difficulty) &&
+          data.difficulty.length >= MAX_BINS
+        )
           $scope.difficultyChart = data.difficulty;
 
-        if (!_.isEqual($scope.blockPropagationChart, data.propagation.histogram)) {
+        if (
+          !_.isEqual($scope.blockPropagationChart, data.propagation.histogram)
+        ) {
           $scope.blockPropagationChart = data.propagation.histogram;
           $scope.blockPropagationAvg = data.propagation.avg;
         }
 
         data.uncleCount.reverse();
 
-        if (!_.isEqual($scope.uncleCountChart, data.uncleCount) && data.uncleCount.length >= MAX_BINS) {
-          $scope.uncleCount = data.uncleCount[data.uncleCount.length - 2] + data.uncleCount[data.uncleCount.length - 1];
+        if (
+          !_.isEqual($scope.uncleCountChart, data.uncleCount) &&
+          data.uncleCount.length >= MAX_BINS
+        ) {
+          $scope.uncleCount =
+            data.uncleCount[data.uncleCount.length - 2] +
+            data.uncleCount[data.uncleCount.length - 1];
           $scope.uncleCountChart = data.uncleCount;
         }
 
-        if (!_.isEqual($scope.transactionDensity, data.transactions) && data.transactions.length >= MAX_BINS)
+        if (
+          !_.isEqual($scope.transactionDensity, data.transactions) &&
+          data.transactions.length >= MAX_BINS
+        )
           $scope.transactionDensity = data.transactions;
 
-        if (!_.isEqual($scope.gasSpending, data.gasSpending) && data.gasSpending.length >= MAX_BINS)
+        if (
+          !_.isEqual($scope.gasSpending, data.gasSpending) &&
+          data.gasSpending.length >= MAX_BINS
+        )
           $scope.gasSpending = data.gasSpending;
 
         if (!_.isEqual($scope.miners, data.miners)) {
@@ -356,7 +410,12 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
           if (index >= 0) {
             var node = $scope.nodes[index];
 
-            if (!_.isUndefined(node) && !_.isUndefined(node.stats) && !_.isUndefined(node.stats.latency) && node.stats.latency !== data.latency) {
+            if (
+              !_.isUndefined(node) &&
+              !_.isUndefined(node.stats) &&
+              !_.isUndefined(node.stats.latency) &&
+              node.stats.latency !== data.latency
+            ) {
               node.stats.latency = data.latency;
               latencyFilter(node);
             }
@@ -366,7 +425,7 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
         break;
 
       case "client-ping":
-        socket.emit('client-pong', {
+        socket.emit("client-pong", {
           serverTime: data.serverTime,
           clientTime: _.now()
         });
@@ -383,17 +442,18 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
 
   function getMinersNames() {
     if ($scope.miners.length > 0) {
-      _.forIn($scope.miners, function (value, key) {
-        if (value.name !== false)
-          return;
+      _.forIn($scope.miners, function(value, key) {
+        if (value.name !== false) return;
 
         if (value.miner === "0x0000000000000000000000000000000000000000")
           return;
 
-        var name = _.result(_.find(_.pluck($scope.nodes, 'info'), 'coinbase', value.miner), 'name');
+        var name = _.result(
+          _.find(_.pluck($scope.nodes, "info"), "coinbase", value.miner),
+          "name"
+        );
 
-        if (!_.isUndefined(name))
-          $scope.miners[key].name = name;
+        if (!_.isUndefined(name)) $scope.miners[key].name = name;
       });
     }
   }
@@ -418,7 +478,9 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
       return true;
     }
 
-    data.pinned = (!_.isUndefined($scope.nodes[index].pinned) ? $scope.nodes[index].pinned : false);
+    data.pinned = !_.isUndefined($scope.nodes[index].pinned)
+      ? $scope.nodes[index].pinned
+      : false;
 
     if (!_.isUndefined($scope.nodes[index].history)) {
       data.history = $scope.nodes[index].history;
@@ -436,17 +498,22 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
 
     $scope.nodesTotal = $scope.nodes.length;
 
-    $scope.nodesActive = _.filter($scope.nodes, function (node) {
+    $scope.nodesActive = _.filter($scope.nodes, function(node) {
       // forkFilter(node);
       return node.stats.active == true;
     }).length;
 
-    $scope.upTimeTotal = _.reduce($scope.nodes, function (total, node) {
-      return total + node.stats.uptime;
-    }, 0) / $scope.nodes.length;
+    $scope.upTimeTotal =
+      _.reduce(
+        $scope.nodes,
+        function(total, node) {
+          return total + node.stats.uptime;
+        },
+        0
+      ) / $scope.nodes.length;
 
-    $scope.map = _.map($scope.nodes, function (node) {
-      var fill = $filter('bubbleClass')(node.stats, $scope.bestBlock);
+    $scope.map = _.map($scope.nodes, function(node) {
+      var fill = $filter("bubbleClass")(node.stats, $scope.bestBlock);
 
       if (node.geo != null)
         return {
@@ -455,7 +522,7 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
           longitude: node.geo.ll[1],
           nodeName: node.info.name,
           fillClass: "text-" + fill,
-          fillKey: fill,
+          fillKey: fill
         };
       else
         return {
@@ -468,13 +535,13 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
 
   function updateBestBlock() {
     if ($scope.nodes.length) {
-      var bestBlock = _.max($scope.nodes, function (node) {
+      var bestBlock = _.max($scope.nodes, function(node) {
         return parseInt(node.stats.block.number);
       }).stats.block.number;
 
       if (bestBlock !== $scope.bestBlock) {
         $scope.bestBlock = bestBlock;
-        $scope.bestStats = _.max($scope.nodes, function (node) {
+        $scope.bestStats = _.max($scope.nodes, function(node) {
           return parseInt(node.stats.block.number);
         }).stats;
 
@@ -485,28 +552,26 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
   }
 
   function latencyFilter(node) {
-    if (_.isUndefined(node.readable))
-      node.readable = {};
+    if (_.isUndefined(node.readable)) node.readable = {};
 
     if (_.isUndefined(node.stats)) {
-      node.readable.latencyClass = 'text-danger';
-      node.readable.latency = 'offline';
+      node.readable.latencyClass = "text-danger";
+      node.readable.latency = "offline";
     }
 
     if (node.stats.active === false) {
-      node.readable.latencyClass = 'text-danger';
-      node.readable.latency = 'offline';
+      node.readable.latencyClass = "text-danger";
+      node.readable.latency = "offline";
     } else {
       if (node.stats.latency <= 100)
-        node.readable.latencyClass = 'text-success';
+        node.readable.latencyClass = "text-success";
 
       if (node.stats.latency > 100 && node.stats.latency <= 1000)
-        node.readable.latencyClass = 'text-warning';
+        node.readable.latencyClass = "text-warning";
 
-      if (node.stats.latency > 1000)
-        node.readable.latencyClass = 'text-danger';
+      if (node.stats.latency > 1000) node.readable.latencyClass = "text-danger";
 
-      node.readable.latency = node.stats.latency + ' ms';
+      node.readable.latency = node.stats.latency + " ms";
     }
   }
 
@@ -514,13 +579,12 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
   function xssFilter(obj) {
     if (_.isArray(obj)) {
       return _.map(obj, xssFilter);
-
     } else if (_.isObject(obj)) {
       return _.mapValues(obj, xssFilter);
-
     } else if (_.isString(obj)) {
-      return obj.replace(/\< *\/* *script *>*/gi, '').replace(/javascript/gi, '');
-    } else
-      return obj;
+      return obj
+        .replace(/\< *\/* *script *>*/gi, "")
+        .replace(/javascript/gi, "");
+    } else return obj;
   }
 });

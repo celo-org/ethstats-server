@@ -1,3 +1,3 @@
-var networkName = 'Celo';
-var faviconPath = '/favicon-celo.ico';
-var blockscoutUrl = "https://blockscout.celo.org"
+var networkName = "Celo";
+var faviconPath = "/favicon-celo.ico";
+var blockscoutUrl = "https://blockscout.celo.org";
