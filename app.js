@@ -183,10 +183,10 @@ api.on('connection', (spark) => {
 
           console.success('API', 'CON', 'Connected', stats.id)
 
-          client.write({
-            action: 'add',
-            data: info
-          })
+          // client.write({
+          //   action: "add",
+          //   data: info
+          // });
         }
       })
     }
@@ -349,10 +349,12 @@ api.on('connection', (spark) => {
       if (err) {
         console.error('API', 'CON', 'Connection with:', spark.address.ip, spark.id, 'end error:', err, '(try unlocking account)')
       } else {
-        client.write({
-          action: 'inactive',
-          data: stats
-        })
+        // client.write({
+        //   action: "inactive",
+        //   data: stats
+        // });
+
+        delete nodesCache[spark.id];
 
         console.warn('API', 'CON', 'Connection with:', spark.id, 'ended:', data)
       }
