@@ -234,7 +234,7 @@ api.on("connection", function(spark) {
           if (index < 0) {
             // only if new node
             node.setValidatorData(validator);
-            const nodeData = node.getData();
+            const nodeData = node.getInfo();
             nodeInfoCache[nodeData.id] = nodeData;
           }
           node.validatorData = validator;
