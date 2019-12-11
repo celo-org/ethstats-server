@@ -138,7 +138,7 @@ const authorize = (proof, stats) => {
 const nodesCache = {};
 const blockCache = {};
 
-setTimeout(() => {
+setInterval(() => {
   const data = Object.values(nodesCache).map(node => {
     const ret = node;
     if (blockCache[node.id]) {
