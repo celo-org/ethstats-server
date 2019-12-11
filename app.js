@@ -133,12 +133,16 @@ const authorize = (proof, stats) => {
   return isAuthorized
 }
 
+const nodeInfoCache = {};
 const nodesCache = {};
 const blockCache = {};
 
 setInterval(() => {
-  const data = Object.values(nodesCache).map(node => {
+  const data = Object.values(nodeInfoCache).map(node => {
     const ret = node;
+    if (nodeCache[node.id]) {
+      ret.stats = nodesCache[node.id].stats;
+    }
     if (blockCache[node.id]) {
       ret.stats.block = blockCache[node.id].block;
       ret.stats.propagationAvg = blockCache[node.id].propagationAvg;
@@ -212,7 +216,9 @@ api.on('connection', (spark) => {
           const node = Nodes.getNodeOrNew(search, validator)
           if (index < 0) {
             // only if new node
-            node.setValidatorData(validator)
+            node.setValidatorData(validator);
+            const nodeData = node.getData();
+            nodeInfoCache[nodeData.id] = nodeData;
           }
           node.validatorData = validator
           if (stats.block.validators.elected.indexOf(validator.address) > -1) {
@@ -355,6 +361,8 @@ api.on('connection', (spark) => {
         // });
 
         delete nodesCache[spark.id];
+        delete nodeInfoCache[spark.id];
+        delete blockCache[spark.id];
 
         console.warn('API', 'CON', 'Connection with:', spark.id, 'ended:', data)
       }
@@ -362,12 +370,9 @@ api.on('connection', (spark) => {
   })
 })
 
-client.on('connection', (clientSpark) => {
-  clientSpark.on('ready', () => {
-    clientSpark.emit(
-      'init',
-      { nodes: Nodes.all() }
-    )
+client.on("connection", function(clientSpark) {
+  clientSpark.on("ready", function(data) {
+    // clientSpark.emit("init", { nodes: Nodes.all() })
 
     Nodes.getCharts()
   })
