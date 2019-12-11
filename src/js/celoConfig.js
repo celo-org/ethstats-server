@@ -1,3 +1,3 @@
-var networkName = 'Celo';
+var networkName = '###NETWORK_NAME###';
 var faviconPath = '/favicon-celo.ico';
-var blockscoutUrl = "https://baklavastaging-blockscout.celo-testnet.org"
+var blockscoutUrl = "###BLOCKSCOUT_URL###"

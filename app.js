@@ -5,12 +5,17 @@ var logger = require('./lib/utils/logger');
 var chalk = require('chalk');
 var http = require('http');
 
-let banned = require('./lib/utils/config').banned;
-let reserved = require('./lib/utils/config').reserved;
-let trusted = require('./lib/utils/config').trusted
-
-if (process.env.TRUSTED_NODE) {
-  trusted.push(process.env.TRUSTED_NODE)
+let trusted = []
+if (process.env.TRUSTED_ADDRESSES) {
+  trusted = process.env.TRUSTED_ADDRESSES.split(',');
+}
+let banned = []
+if (process.env.BANNED_ADDRESSES) {
+  banned = process.env.BANNED_ADDRESSES.split(',');
+}
+let reserved = []
+if (process.env.RESERVED_ADDRESSES) {
+  reserved = process.env.RESERVED_ADDRESSES.split(',');
 }
 
 // Init http server
