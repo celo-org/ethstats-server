@@ -374,7 +374,7 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
         break;
 
       case "allData":
-        $scope.nodes = data.nodes;
+        $scope.nodes = data;
 
         updateActiveNodes();
         updateBestBlock();
