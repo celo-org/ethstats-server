@@ -184,10 +184,10 @@ api.on("connection", function(spark) {
 
           console.success("API", "CON", "Connected", stats.id);
 
-          client.write({
-            action: "add",
-            data: info
-          });
+          // client.write({
+          //   action: "add",
+          //   data: info
+          // });
         }
       });
     }
@@ -411,10 +411,12 @@ api.on("connection", function(spark) {
           "(try unlocking account)"
         );
       } else {
-        client.write({
-          action: "inactive",
-          data: stats
-        });
+        // client.write({
+        //   action: "inactive",
+        //   data: stats
+        // });
+
+        delete nodesCache[spark.id];
 
         console.warn(
           "API",
