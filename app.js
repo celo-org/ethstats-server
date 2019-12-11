@@ -142,7 +142,7 @@ const blockCache = {};
 setInterval(() => {
   const data = Object.values(nodeInfoCache).map(node => {
     const ret = node;
-    if (nodeCache[node.id]) {
+    if (nodeCaches[node.id]) {
       ret.stats = nodesCache[node.id].stats;
     }
     if (blockCache[node.id]) {
