@@ -12,7 +12,7 @@
     "test:watch": "npm test -- --watch",
     "compile": "grunt build",
     "clean": "grunt clean",
-    "wattch": "grunt watch",
+    "watch": "grunt watch",
     "dist": "grunt",
     "start": "node ./bin/www"
   },
