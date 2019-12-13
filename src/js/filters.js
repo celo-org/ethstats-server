@@ -277,7 +277,7 @@ angular.module('netStatsApp.filters', [])
 		if(stats.block.number < bestBlock)
 			return 'text-gray';
 
-		if(stats.block.propagation == 0)
+		if(stats.block.propagation === 0)
 			return 'text-info';
 
 		if(stats.block.propagation < 1000)
@@ -300,7 +300,7 @@ angular.module('netStatsApp.filters', [])
 		if(stats.block.number < bestBlock)
 			return 'text-gray';
 
-		if(stats.propagationAvg == 0)
+		if(stats.propagationAvg === 0)
 			return 'text-info';
 
 		if(stats.propagationAvg < 1000)
@@ -320,7 +320,7 @@ angular.module('netStatsApp.filters', [])
 		if( ! active)
 			return 'text-gray';
 
-		if(propagationAvg == 0)
+		if(propagationAvg === 0)
 			return 'text-info';
 
 		if(propagationAvg < 1000)
@@ -431,8 +431,7 @@ angular.module('netStatsApp.filters', [])
 			return "∞";
 		//ms = _.now() - stats.block.received;
 
-		prefix = '';
-
+		var prefix = '';
 		var result = 0;
 
 		if(ms < 1000) {
