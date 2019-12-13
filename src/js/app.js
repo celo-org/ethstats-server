@@ -13,7 +13,7 @@ netStatsApp.run(function($rootScope) {
 /* Services */
 
 netStatsApp.factory('socket', function ($rootScope) {
-	var socket = new Primus();
+	var socket = new Primus('wss://baklavastaging-ethstats.celo-testnet.org/primus/');
 	return socket;
 });
 
