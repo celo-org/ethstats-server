@@ -54,10 +54,9 @@ function blockTimeClass (diff) {
   return 'text-danger'
 }
 
-module.exports = {
-  peerClass,
-  blockTimeClass,
-  mainClass,
-  timeClass,
-  compareVersions
-}
+netStatsApp.peerClass = peerClass
+netStatsApp.blockTimeClass = blockTimeClass
+netStatsApp.mainClass = mainClass
+netStatsApp.timeClass = timeClass
+netStatsApp.compareVersions = compareVersions
+
