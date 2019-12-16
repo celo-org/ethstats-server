@@ -205,7 +205,7 @@ api.on('connection', (spark) => {
         })
       }
 
-      Nodes.addBlock(stats.id, stats.block, (err) => {
+      Nodes.addBlock(stats.id, stats.block, (err, stats) => {
         if (err) {
           console.error('API', 'BLK', 'Block error:', err, stats)
         } else if (stats) {
