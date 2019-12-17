@@ -28,12 +28,12 @@ angular.module('netStatsApp.filters', [])
 })
 .filter('mainClass', function() {
 	return function(node, bestBlock) {
-	  	return netStatsApp.mainClass(node, bestBlock);
+	  	return mainClass(node, bestBlock);
 	};
 })
 .filter('peerClass', function() {
 	return function(peers, active) {
-		return netStatsApp.peerClass(peers, active);
+		return peerClass(peers, active);
 	};
 })
 .filter('miningClass', function() {
@@ -265,7 +265,7 @@ angular.module('netStatsApp.filters', [])
 		if( ! active)
 			return 'text-gray';
 
-		return netStatsApp.timeClass(timestamp);
+		return timeClass(timestamp);
 	};
 })
 .filter('propagationTimeClass', function() {
@@ -466,12 +466,12 @@ angular.module('netStatsApp.filters', [])
 })
 .filter('avgTimeClass', function() {
 	return function(time) {
-		return netStatsApp.blockTimeClass(time);
+		return blockTimeClass(time);
 	}
 })
 .filter('blocksInEpochClass', function() {
 	return function(blocks, epochSize) {
-		return netStatsApp.blockTimeClass(Math.round(40*(1-blocks/epochSize)));
+		return blockTimeClass(Math.round(40*(1-blocks/epochSize)));
 	}
 })
 .filter('upTimeFilter', function() {
@@ -573,7 +573,7 @@ angular.module('netStatsApp.filters', [])
 })
 .filter('bubbleClass', function() {
 	return function(node, bestBlock) {
-		return netStatsApp.mainClass(node, bestBlock).replace('text-', '');
+		return mainClass(node, bestBlock).replace('text-', '');
 	};
 })
 .filter('minerNameFilter', function() {
