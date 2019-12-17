@@ -54,9 +54,8 @@ function blockTimeClass (diff) {
   return 'text-danger'
 }
 
-netStatsApp.peerClass = peerClass
-netStatsApp.blockTimeClass = blockTimeClass
-netStatsApp.mainClass = mainClass
-netStatsApp.timeClass = timeClass
-netStatsApp.compareVersions = compareVersions
-
+angular.peerClass = peerClass
+angular.blockTimeClass = blockTimeClass
+angular.mainClass = mainClass
+angular.timeClass = timeClass
+angular.compareVersions = compareVersions

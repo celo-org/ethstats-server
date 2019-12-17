@@ -1,5 +1,4 @@
-netStatsApp = {}
-
+global.angular = {}
 const assert = require('assert')
 require('../src/js/filterfunctions')
 
@@ -8,13 +7,13 @@ describe('filterfunctions', () => {
 
     it('should return text-gray if not active', () => {
 
-      const pc = netStatsApp.peerClass(null, false)
+      const pc = angular.peerClass(null, false)
       assert.equal(pc, 'text-gray')
     })
 
     it('should return text-gray if active', () => {
 
-      const pc = netStatsApp.peerClass(null, true)
+      const pc = angular.peerClass(null, true)
       assert.equal(pc, 'text-danger')
     })
 
