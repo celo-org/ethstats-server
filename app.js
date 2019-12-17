@@ -24,6 +24,7 @@ if (process.env.NODE_ENV === 'production') {
   console.log('starting production server!')
   server = http.createServer()
 } else {
+  console.log('starting dev server!')
   const app = require('./lib/express')
   server = http.createServer(app)
 }
