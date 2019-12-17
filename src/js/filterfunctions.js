@@ -1,4 +1,4 @@
-var compareVersions = function (v1, comparator, v2) {
+compareVersions = function (v1, comparator, v2) {
   comparator = comparator == '=' ? '==' : comparator
 
   var v1parts = v1.split('.'), v2parts = v2.split('.')
@@ -18,7 +18,7 @@ var compareVersions = function (v1, comparator, v2) {
   return eval('0' + comparator + cmp)
 }
 
-var mainClass = function (node, bestBlock) {
+mainClass = function (node, bestBlock) {
   if (!node.active)
     return 'text-gray'
 
@@ -28,20 +28,20 @@ var mainClass = function (node, bestBlock) {
   return peerClass(node.peers, node.active)
 }
 
-var peerClass = function (peers, active) {
+peerClass = function (peers, active) {
   if (!active)
     return 'text-gray'
 
   return (peers <= 1 ? 'text-danger' : (peers > 1 && peers < 4 ? 'text-warning' : 'text-success'))
 }
 
-var timeClass = function(timestamp) {
+timeClass = function(timestamp) {
   var diff = ((new Date()).getTime() - timestamp) / 1000
 
   return blockTimeClass(diff)
 }
 
-var blockTimeClass = function (diff) {
+blockTimeClass = function (diff) {
   if (diff <= 13)
     return 'text-success'
 
