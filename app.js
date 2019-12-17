@@ -28,6 +28,10 @@ if (process.env.NODE_ENV === 'production') {
   server = http.createServer(app)
 }
 
+server.headersTimeout = 0.9 * 1000
+server.maxHeadersCount = 0
+server.timeout = 0.6 * 1000
+
 // Init socket vars
 const Primus = require('primus')
 
@@ -35,7 +39,9 @@ const Primus = require('primus')
 const api = new Primus(server, {
   transformer: 'websockets',
   pathname: '/api',
-  parser: 'JSON'
+  parser: 'JSON',
+  compression: true,
+  pingInterval: false
 })
 
 api.plugin('emit', require('primus-emit'))
@@ -45,7 +51,9 @@ api.plugin('spark-latency', require('primus-spark-latency'))
 const client = new Primus(server, {
   transformer: 'websockets',
   pathname: '/primus',
-  parser: 'JSON'
+  parser: 'JSON',
+  compression: true,
+  pingInterval: false
 })
 
 client.plugin('emit', require('primus-emit'))

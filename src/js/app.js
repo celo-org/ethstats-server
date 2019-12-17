@@ -13,7 +13,10 @@ netStatsApp.run(function($rootScope) {
 /* Services */
 
 netStatsApp.factory('socket', function ($rootScope) {
-	var socket = new Primus();
+	var socket = new Primus({}, {
+		pingTimeout: 5 * 1000,
+		timeout: 2 * 1000
+	});
 	return socket;
 });
 
