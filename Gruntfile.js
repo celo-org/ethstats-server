@@ -25,10 +25,10 @@ var vendor = [
 ]
 
 var styles = [
-  'bootstrap.min.css',
-  'minimal-icons-embedded.css',
-  'toastr.min.css',
-  'style.css'
+  'node_modules/bootstrap/dist/css/bootstrap.min.css',
+  'src/css/minimal-icons-embedded.css',
+  'node_modules/toastr/build/toastr.min.css',
+  'src/css/style.css'
 ]
 
 module.exports = function (grunt) {
@@ -87,7 +87,7 @@ module.exports = function (grunt) {
           },
           {
             expand: true,
-            cwd: 'src/css/',
+            flatten: true,
             src: styles,
             dest: 'dist/css/',
             filter: 'isFile'
