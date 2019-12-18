@@ -85,7 +85,7 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
 
   var timeout = setInterval(function () {
     $scope.$apply();
-  }, 300);
+  }, 1000);
 
   $scope.getNumber = function (num) {
     return new Array(num);
