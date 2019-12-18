@@ -223,35 +223,31 @@ angular.module('netStatsApp.directives', [])
 
 				var TICKS = 40;
 
-				var x = d3.scale.linear()
+				var x = d3.scaleLinear()
 					.domain([0, 10000])
 					.rangeRound([0, width])
 					.interpolate(d3.interpolateRound);
 
-				var y = d3.scale.linear()
+				var y = d3.scaleLinear()
 					.range([height, 0])
 					.interpolate(d3.interpolateRound);
 
-				var color = d3.scale.linear()
+				var color = d3.scaleLinear()
 					.domain([1000, 3000, 7000, 10000])
 					.range(["#50fa7b", "#f1fa8c", "#ffb86c", "#ff5555"]);
 
-				var xAxis = d3.svg.axis()
-					.scale(x)
-					.orient("bottom")
+				var xAxis = d3.axisBottom(x)
 					.ticks(4, ",.1s")
 					.tickFormat(function(t){ return t/1000 + "s"});
 
-				var yAxis = d3.svg.axis()
-					.scale(y)
-					.orient("left")
+				var yAxis = d3.axisLeft(y)
 					.ticks(3)
-					.tickFormat(d3.format("%"));
+					.tickFormat(d3.format(".0%"));
 
-				var line = d3.svg.line()
+				var line = d3.line()
 					.x(function(d) { return x(d.x + d.dx/2) - 1; })
 					.y(function(d) { return y(d.y) - 2; })
-					.interpolate('basis');
+					.curve(d3.curveBasis);
 
 				var tip = d3.tip()
 					.attr('class', 'd3-tip')
@@ -265,21 +261,19 @@ angular.module('netStatsApp.directives', [])
 				{
 					var data = scope.data;
 
-					var x = d3.scale.linear()
+					var x = d3.scaleLinear()
 						.domain([0, 10000])
 						.rangeRound([0, width])
 						.interpolate(d3.interpolateRound);
 
-					var xAxis = d3.svg.axis()
-						.scale(x)
-						.orient("bottom")
+					var xAxis = d3.axisBottom(x)
 						.ticks(4, ",.1s")
 						.tickFormat(function(t){ return t/1000 + "s"});
 
-					var line = d3.svg.line()
+					var line = d3.line()
 						.x(function(d) { return x(d.x + d.dx/2) - 1; })
 						.y(function(d) { return y(d.y) - 2; })
-						.interpolate('basis');
+						.curve(d3.curveBasis);
 
 					// Adjust y axis
 					y.domain([0, d3.max(data, function(d) { return d.y; })]);

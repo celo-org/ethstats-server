@@ -14,7 +14,7 @@ var vendor = [
   'node_modules/angular/angular.min.js',
   'node_modules/ngstorage/ngStorage.min.js',
   'node_modules/lodash/lodash.min.js',
-  'node_modules/d3/d3.min.js',
+  'node_modules/d3/dist/d3.min.js',
   'node_modules/d3-tip/dist/index.js',
   'node_modules/moment/min/moment.min.js',
   'node_modules/moment/locale/en.js',
