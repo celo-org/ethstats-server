@@ -16,8 +16,6 @@ var vendor = [
   'node_modules/lodash/lodash.min.js',
   'node_modules/d3/d3.min.js',
   'node_modules/d3-tip/dist/index.js',
-  'node_modules/topojson/dist/topojson.min.js',
-  'node_modules/datamaps/dist/datamaps.none.min.js',
   'node_modules/moment/min/moment.min.js',
   'node_modules/moment/locale/en.js',
   'node_modules/toastr/build/toastr.min.js',

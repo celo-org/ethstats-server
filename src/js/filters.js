@@ -465,12 +465,15 @@ angular.module('netStatsApp.filters', [])
 	};
 })
 .filter('avgTimeFilter', function() {
-	return function(time) {
+	var avgTimeFilter = function(time) {
 		if(time < 60)
 			return parseFloat(time).toFixed(2) + ' s';
 
 		return moment.duration(Math.round(time), 's').humanize();
 	};
+
+	avgTimeFilter.$stateful = true
+	return avgTimeFilter
 })
 .filter('avgTimeClass', function() {
 	return function(time) {
