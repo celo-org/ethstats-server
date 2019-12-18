@@ -273,11 +273,6 @@ api.on('connection', (spark) => {
     }
   })
 
-  spark.on('history', (data) => {
-    const { stats } = data
-    console.success('API', 'HIS', 'Got history from:', stats.id)
-  })
-
   spark.on('node-ping', (data) => {
     const { stats, proof } = data
     if (sanitize(stats)) {
@@ -310,17 +305,6 @@ api.on('connection', (spark) => {
           )
         }
       })
-
-      if (Nodes.requiresUpdate(stats.id)) {
-        const range = Nodes.getHistory().getHistoryRequestRange()
-
-        if (range) {
-          spark.emit('history', range)
-          console.success('API', 'HIS', 'Asked:', stats.id, 'for history:', range.min, '-', range.max)
-
-          Nodes.askedForHistory(true)
-        }
-      }
     }
   })
 
