@@ -551,17 +551,6 @@ angular.module('netStatsApp.filters', [])
 			tooltip.push(string);
 		}
 
-		if(node.geo !== null)
-		{
-			string = "Location: <b>";
-
-			if(node.geo.city !== '')
-				string += node.geo.city + ", ";
-			string += node.geo.country + "</b>";
-
-			tooltip.push(string);
-		}
-
 		if(node.info.contact !== '') {
 			string = "Contact: <b>" + (typeof node.info.contact !== 'undefined' ? node.info.contact : '-') + "</b>";
 
