@@ -4,6 +4,8 @@ const _ = require('lodash')
 const { Keccak } = require('sha3')
 const EC = require('elliptic').ec
 const http = require('http')
+const app = require('./lib/express')
+const Primus = require('primus')
 
 let banned = require('./lib/utils/config').banned
 let reserved = require('./lib/utils/config').reserved
@@ -17,24 +19,13 @@ const clientPingTimeout = 5 * 1000
 const nodeCleanupTimeout = 1000 * 60 * 60
 const defaultPort = 3000
 
-let server
-
 // Init http server
-if (process.env.NODE_ENV === 'production') {
-  console.log('starting production server!')
-  server = http.createServer()
-} else {
-  console.log('starting dev server!')
-  const app = require('./lib/express')
-  server = http.createServer(app)
-}
+console.log('starting server!')
+const server = http.createServer(app)
 
 server.headersTimeout = 0.9 * 1000
 server.maxHeadersCount = 0
 server.timeout = 0.6 * 1000
-
-// Init socket vars
-const Primus = require('primus')
 
 // Init API Socket connection
 const api = new Primus(server, {
