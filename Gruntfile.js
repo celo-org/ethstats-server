@@ -126,7 +126,7 @@ module.exports = function (grunt) {
           separator: ';\n',
         },
         src: scripts,
-        dest: 'dist/js/app.js'
+        dest: 'dist/js/netstats.js'
       },
       netstats: {
         options: {
