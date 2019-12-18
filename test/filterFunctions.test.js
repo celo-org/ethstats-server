@@ -1,6 +1,6 @@
 global.angular = {}
 const assert = require('assert')
-require('../src/js/filterfunctions')
+require('../src/js/filterFunctions')
 
 describe('filterfunctions', () => {
   describe('#peerClass()', () => {
