@@ -148,7 +148,8 @@ module.exports = function (grunt) {
         options: {
           mangle: false,
           sourceMap: false,
-          sourceMapIncludeSources: true
+          sourceMapIncludeSources: true,
+          compress: true
         },
         dest: 'dist/js/app.min.js',
         src: ['<%= concat.scripts.dest %>']
