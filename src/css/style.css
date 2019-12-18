@@ -8,6 +8,7 @@ body {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	background-color: #2E3338;
+	font-family: "Source Sans Pro", sans-serif;
 }
 
 @font-face {
