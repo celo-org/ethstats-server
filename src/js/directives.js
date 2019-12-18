@@ -282,7 +282,8 @@ angular.module('netStatsApp.directives', [])
 					element.empty();
 
 					/* Start drawing */
-					var svg = d3.select(".d3-blockpropagation").append("svg")
+					var svg = d3.select(".d3-blockpropagation")
+						.append("svg")
 						.attr("width", width + margin.left + margin.right)
 						.attr("height", height + margin.top + margin.bottom)
 					  .append("g")
@@ -295,13 +296,12 @@ angular.module('netStatsApp.directives', [])
 						.attr("transform", "translate(0," + height + ")")
 						.call(xAxis)
 						.selectAll("text")
-						  .attr("y", 6);
+						.attr("y", 6);
 
 					svg.append("g")
 						.attr("class", "y axis")
 						.attr("transform", "translate(" + width + ", 0)")
 						.call(yAxis);
-
 
 					var bar = svg.append("g")
 						.attr("class", "bars")
