@@ -4,6 +4,8 @@ const _ = require('lodash')
 const { Keccak } = require('sha3')
 const EC = require('elliptic').ec
 const http = require('http')
+const app = require('./lib/express')
+const Primus = require('primus')
 
 let trusted = []
 if (process.env.TRUSTED_ADDRESSES) {
@@ -22,25 +24,21 @@ const clientPingTimeout = 5 * 1000
 const nodeCleanupTimeout = 1000 * 60 * 60
 const defaultPort = 3000
 
-let server
-
 // Init http server
-if (process.env.NODE_ENV === 'production') {
-  console.log('starting production server!')
-  server = http.createServer()
-} else {
-  const app = require('./lib/express')
-  server = http.createServer(app)
-}
+console.log('starting server!')
+const server = http.createServer(app)
 
-// Init socket vars
-const Primus = require('primus')
+server.headersTimeout = 0.9 * 1000
+server.maxHeadersCount = 0
+server.timeout = 0.6 * 1000
 
 // Init API Socket connection
 const api = new Primus(server, {
   transformer: 'websockets',
   pathname: '/api',
-  parser: 'JSON'
+  parser: 'JSON',
+  compression: true,
+  pingInterval: false
 })
 
 api.plugin('emit', require('primus-emit'))
@@ -50,7 +48,9 @@ api.plugin('spark-latency', require('primus-spark-latency'))
 const client = new Primus(server, {
   transformer: 'websockets',
   pathname: '/primus',
-  parser: 'JSON'
+  parser: 'JSON',
+  compression: true,
+  pingInterval: false
 })
 
 client.plugin('emit', require('primus-emit'))
@@ -210,19 +210,19 @@ api.on('connection', (spark) => {
         })
       }
 
-      Nodes.addBlock(stats.id, stats.block, (err) => {
+      Nodes.addBlock(stats.id, stats.block, (err, updatedStats) => {
         if (err) {
-          console.error('API', 'BLK', 'Block error:', err, stats)
-        } else if (stats) {
+          console.error('API', 'BLK', 'Block error:', err, updatedStats)
+        } else if (updatedStats) {
           client.write({
             action: 'block',
-            data: stats
+            data: updatedStats
           })
 
           console.success('API', 'BLK',
-            'Block:', stats.block['number'],
-            'td:', stats.block['totalDifficulty'],
-            'from:', stats.id, 'ip:', spark.address.ip)
+            'Block:', updatedStats.block['number'],
+            'td:', updatedStats.block['totalDifficulty'],
+            'from:', updatedStats.id, 'ip:', spark.address.ip)
 
           Nodes.getCharts()
         }
@@ -278,11 +278,6 @@ api.on('connection', (spark) => {
     }
   })
 
-  spark.on('history', (data) => {
-    const { stats } = data
-    console.success('API', 'HIS', 'Got history from:', stats.id)
-  })
-
   spark.on('node-ping', (data) => {
     const { stats, proof } = data
     if (sanitize(stats)) {
@@ -315,17 +310,6 @@ api.on('connection', (spark) => {
           )
         }
       })
-
-      if (Nodes.requiresUpdate(stats.id)) {
-        const range = Nodes.getHistory().getHistoryRequestRange()
-
-        if (range) {
-          spark.emit('history', range)
-          console.success('API', 'HIS', 'Asked:', stats.id, 'for history:', range.min, '-', range.max)
-
-          Nodes.askedForHistory(true)
-        }
-      }
     }
   })
 
