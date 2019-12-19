@@ -13,14 +13,8 @@ const banned = require('./utils/config').banned
 const reserved = require('./utils/config').reserved
 const trusted = require('./utils/config').trusted
 
-if (process.env.TRUSTED_ADDRESSES) {
-  trusted.push(...process.env.TRUSTED_ADDRESSES.split(','))
-}
-if (process.env.BANNED_ADDRESSES) {
-  banned.push(...process.env.BANNED_ADDRESSES.split(','))
-}
-if (process.env.RESERVED_ADDRESSES) {
-  reserved.push(...process.env.RESERVED_ADDRESSES.split(','))
+if (process.env.TRUSTED_NODE) {
+  trusted.push(process.env.TRUSTED_NODE)
 }
 
 const clientPingTimeout = 5 * 1000
@@ -33,13 +27,13 @@ class Server {
 
   constructor () {
     console.log('Starting server!')
-    const server = http.createServer(app)
+    this.server = http.createServer(app)
 
-    server.headersTimeout = 0.9 * 1000
-    server.maxHeadersCount = 0
-    server.timeout = 0.6 * 1000
+    this.server.headersTimeout = 0.9 * 1000
+    this.server.maxHeadersCount = 0
+    this.server.timeout = 0.6 * 1000
 
-    this.api = new Primus(server, {
+    this.api = new Primus(this.server, {
       transformer: 'websockets',
       pathname: '/api',
       parser: 'JSON',
@@ -47,7 +41,7 @@ class Server {
       pingInterval: false
     })
 
-    this.client = new Primus(server, {
+    this.client = new Primus(this.server, {
       transformer: 'websockets',
       pathname: '/primus',
       parser: 'JSON',
@@ -55,16 +49,13 @@ class Server {
       pingInterval: false
     })
 
-    this.external = new Primus(server, {
+    this.external = new Primus(this.server, {
       transformer: 'websockets',
       pathname: '/external',
       parser: 'JSON'
     })
 
     this.nodes = new Collection(this.external)
-
-    server.listen(process.env.PORT || defaultPort)
-
   }
 
   static sanitize (stats) {
@@ -258,7 +249,7 @@ class Server {
             }
 
             if (pending) {
-              this.client.write({
+              client.write({
                 action: 'pending',
                 data: pending
               })
@@ -333,7 +324,7 @@ class Server {
           if (err) {
             console.error('API', 'CON', 'Connection with:', spark.address.ip, spark.id, 'end error:', err, '(try unlocking account)')
           } else {
-            this.client.write({
+            client.write({
               action: 'inactive',
               data: stats
             })
@@ -393,6 +384,8 @@ class Server {
     this.initExternal()
     this.initNodes()
     this.wireup()
+
+    this.server.listen(process.env.PORT || defaultPort)
   }
 }
 
