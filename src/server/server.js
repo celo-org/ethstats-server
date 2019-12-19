@@ -13,8 +13,14 @@ const banned = require('./utils/config').banned
 const reserved = require('./utils/config').reserved
 const trusted = require('./utils/config').trusted
 
-if (process.env.TRUSTED_NODE) {
-  trusted.push(process.env.TRUSTED_NODE)
+if (process.env.TRUSTED_ADDRESSES) {
+  trusted.push(...process.env.TRUSTED_ADDRESSES.split(','))
+}
+if (process.env.BANNED_ADDRESSES) {
+  banned.push(...process.env.BANNED_ADDRESSES.split(','))
+}
+if (process.env.RESERVED_ADDRESSES) {
+  reserved.push(...process.env.RESERVED_ADDRESSES.split(','))
 }
 
 const clientPingTimeout = 5 * 1000
