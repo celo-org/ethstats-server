@@ -252,7 +252,7 @@ class Server {
             }
 
             if (pending) {
-              client.write({
+              this.client.write({
                 action: 'pending',
                 data: pending
               })
@@ -327,7 +327,7 @@ class Server {
           if (err) {
             console.error('API', 'CON', 'Connection with:', spark.address.ip, spark.id, 'end error:', err, '(try unlocking account)')
           } else {
-            client.write({
+            this.client.write({
               action: 'inactive',
               data: stats
             })
