@@ -27,13 +27,13 @@ class Server {
 
   constructor () {
     console.log('Starting server!')
-    this.server = http.createServer(app)
+    const server = http.createServer(app)
 
-    this.server.headersTimeout = 0.9 * 1000
-    this.server.maxHeadersCount = 0
-    this.server.timeout = 0.6 * 1000
+    server.headersTimeout = 0.9 * 1000
+    server.maxHeadersCount = 0
+    server.timeout = 0.6 * 1000
 
-    this.api = new Primus(this.server, {
+    this.api = new Primus(server, {
       transformer: 'websockets',
       pathname: '/api',
       parser: 'JSON',
@@ -41,7 +41,7 @@ class Server {
       pingInterval: false
     })
 
-    this.client = new Primus(this.server, {
+    this.client = new Primus(server, {
       transformer: 'websockets',
       pathname: '/primus',
       parser: 'JSON',
@@ -49,13 +49,16 @@ class Server {
       pingInterval: false
     })
 
-    this.external = new Primus(this.server, {
+    this.external = new Primus(server, {
       transformer: 'websockets',
       pathname: '/external',
       parser: 'JSON'
     })
 
     this.nodes = new Collection(this.external)
+
+    server.listen(process.env.PORT || defaultPort)
+
   }
 
   static sanitize (stats) {
@@ -384,8 +387,6 @@ class Server {
     this.initExternal()
     this.initNodes()
     this.wireup()
-
-    this.server.listen(process.env.PORT || defaultPort)
   }
 }
 
