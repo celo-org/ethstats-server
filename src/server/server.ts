@@ -21,8 +21,14 @@ import {
 } from "./utils/config"
 
 // add trusted from env
-if (process.env.TRUSTED_NODE) {
-  trusted.push(process.env.TRUSTED_NODE)
+if (process.env.TRUSTED_ADDRESSES) {
+  trusted.push(...process.env.TRUSTED_ADDRESSES.split(','))
+}
+if (process.env.BANNED_ADDRESSES) {
+  banned.push(...process.env.BANNED_ADDRESSES.split(','))
+}
+if (process.env.RESERVED_ADDRESSES) {
+  reserved.push(...process.env.RESERVED_ADDRESSES.split(','))
 }
 
 export default class Server {
