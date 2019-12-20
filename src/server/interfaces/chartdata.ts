@@ -4,7 +4,7 @@ export interface ChartData {
   height: number[]
   blocktime: number[]
   avgBlocktime: number
-  difficulty: number[]
+  difficulty: string[]
   uncles: number[]
   transactions: number[]
   gasSpending: number[]

@@ -20,11 +20,13 @@ export default class Collection {
   private history: History = new History()
   private debounced: any = null
   // todo: refactor this outta here
-  _externalAPI: Primus
-  _highestBlock: number = 0
+  private externalAPI: Primus
+  private highestBlock: number = 1
 
-  constructor(externalAPI: Primus) {
-    this._externalAPI = externalAPI
+  constructor(
+    externalAPI: Primus
+  ) {
+    this.externalAPI = externalAPI
   }
 
   add(
@@ -85,11 +87,11 @@ export default class Collection {
         block.propagation = newBlock.block.propagation
         block.validators = newBlock.block.validators
 
-        if (newBlock.block.number > this._highestBlock) {
-          this._highestBlock = newBlock.block.number
-          this._externalAPI.write({
+        if (newBlock.block.number > this.highestBlock) {
+          this.highestBlock = newBlock.block.number
+          this.externalAPI.write({
             action: 'lastBlock',
-            number: this._highestBlock
+            number: this.highestBlock
           })
         }
 
@@ -222,7 +224,7 @@ export default class Collection {
 
     if (this.debounced === null) {
       this.debounced = _.debounce(() => {
-        this.getCharts()
+        this.history.getCharts()
       }, 500, {
         leading: false,
         maxWait: 2000,

@@ -246,7 +246,13 @@ export default class Server {
       })
 
       spark.on('block', (data: NodeData) => {
-        const {stats, proof}: { stats: Stats, proof: Proof } = data
+        const {
+          stats,
+          proof
+        }: {
+          stats: Stats,
+          proof: Proof
+        } = data
 
         if (Server.sanitize(stats) && !_.isUndefined(stats.block)) {
           stats.id = proof.address
@@ -289,9 +295,11 @@ export default class Server {
             stats.id,
             stats.block,
             (err: Error | string, updatedStats: BlockStats) => {
+
               if (err) {
                 console.error('API', 'BLK', 'Block error:', err, updatedStats)
               } else if (updatedStats) {
+
                 this.client.write({
                   action: 'block',
                   data: updatedStats

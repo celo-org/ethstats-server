@@ -6,8 +6,8 @@ export interface Block {
   hash?: string
   parentHash?: string
   miner?: string
-  difficulty?: number
-  totalDifficulty?: number
+  difficulty?: string
+  totalDifficulty?: string
   gasLimit?: number
   gasUsed?: number
   timestamp?: number
@@ -19,10 +19,10 @@ export interface Block {
   trusted?: boolean
   arrived?: number
   fork?: number
-  forks: Block[]
+  forks?: Block[]
   block?: Block
   propagation?: number
-  propagTimes: PropagTime[]
+  propagTimes?: PropagTime[]
   transactions?: any[]
   uncles?: any[]
 }

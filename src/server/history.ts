@@ -11,7 +11,6 @@ const MAX_HISTORY = 2000
 const MAX_PEER_PROPAGATION = 40
 const MIN_PROPAGATION_RANGE = 0
 const MAX_PROPAGATION_RANGE = 10000
-
 const MAX_BINS = 40
 
 export default class History {
@@ -96,7 +95,8 @@ export default class History {
             } else {
               // Fork index is different
               historyBlock.propagTimes[propIndex].fork = forkIndex
-              historyBlock.propagTimes[propIndex].propagation = block.propagation = now - historyBlock.forks[forkIndex].received
+              historyBlock.propagTimes[propIndex].propagation =
+                block.propagation = now - historyBlock.forks[forkIndex].received
             }
 
           } else {
@@ -109,8 +109,9 @@ export default class History {
             if (prevBlock) {
               block.time = Math.max(block.arrived - prevBlock.block.arrived, 0)
 
-              if (block.number < this.bestBlock().height)
+              if (block.number < this.bestBlock().height) {
                 block.time = Math.max((block.timestamp - prevBlock.block.timestamp) * 1000, 0)
+              }
             } else {
               block.time = 0
             }
@@ -392,7 +393,7 @@ export default class History {
         .map((item: Block): {
           height: number
           blocktime: number
-          difficulty: number
+          difficulty: string
           uncles: number
           transactions: number
           gasSpending: number
