@@ -1,125 +1,149 @@
-import * as _ from 'lodash'
+// @ts-ignore
+import _ from 'lodash'
 import { trusted } from "./utils/config"
+// @ts-ignore
+import Primus from "primus"
+import { Stats } from "./interfaces/stats";
+import { Block } from "./interfaces/block";
+import { Validator } from "./interfaces/validator";
+import { Pending } from "./interfaces/pending";
+import { NodeInfo } from "./interfaces/nodeinfo"
+import { BasicStats, BasicStats2 } from "./interfaces/basicstats";
+import { Latency } from "./interfaces/latency";
+import { BlockStats } from "./interfaces/blockstats";
+import { Info } from "./interfaces/info";
+import { Uptime } from "./interfaces/uptime";
 
 const MAX_HISTORY = 40
 const MAX_INACTIVE_TIME = 1000 * 60 * 60 * 4
 
 export default class Node {
 
-  id
-  address
-  validatorData
-  trusted
-  info
-  stats
-  history
-  uptime
-  spark
+  id: string = null
 
-  constructor(data) {
-    this.id = null
-    this.address = null
-    this.validatorData = {
-      name: null,
-      url: null,
-      affiliation: null,
-      registered: false,
-      elected: false,
-      signer: null
-    }
-    this.trusted = false
-    this.info = {}
-    this.stats = {
-      active: false,
-      mining: false,
-      elected: false,
-      hashrate: 0,
-      peers: 0,
-      pending: 0,
-      gasPrice: 0,
-      block: {
-        number: 0,
-        hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
-        difficulty: 0,
-        totalDifficulty: 0,
-        gasLimit: 0,
-        timestamp: 0,
-        time: 0,
-        arrival: 0,
-        received: 0,
-        propagation: 0,
-        transactions: [],
-        uncles: []
+  name: string = null
+
+  address: string = null
+
+  validatorData: Validator = {
+    name: null,
+    url: null,
+    address: null,
+    affiliation: null,
+    registered: false,
+    elected: false,
+    signer: null
+  }
+
+  trusted: boolean = false
+
+  info: Info = {
+    canUpdateHistory: false,
+    name: null,
+    contact: null
+  }
+
+  stats: Stats = <Stats>{
+    active: false,
+    mining: false,
+    elected: false,
+    hashrate: 0,
+    peers: 0,
+    pending: 0,
+    gasPrice: 0,
+    block: <Block>{
+      number: 0,
+      hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+      difficulty: 0,
+      totalDifficulty: 0,
+      gasLimit: 0,
+      timestamp: 0,
+      time: 0,
+      validators: {
+        registered: [],
+        elected: []
       },
-      syncing: false,
-      propagationAvg: 0,
-      latency: 0,
-      uptime: 100
-    }
+      arrival: 0,
+      received: 0,
+      propagation: 0,
+      transactions: [],
+      uncles: []
+    },
+    syncing: false,
+    propagationAvg: 0,
+    latency: 0,
+    uptime: 100
+  }
 
-    this.history = new Array(MAX_HISTORY)
+  history: number[] = []
 
-    this.uptime = {
-      started: null,
-      up: 0,
-      down: 0,
-      lastStatus: null,
-      lastUpdate: null
-    }
+  uptime: Uptime = {
+    started: 0,
+    up: 0,
+    down: 0,
+    lastStatus: false,
+    lastUpdate: 0
+  }
+
+  spark: Primus.spark
+
+  constructor(data: Stats | Validator) {
 
     if (!data.registered) {
-      this.init(data)
+      this.init(data as Stats)
     } else {
-      this.setValidatorData(data)
+      this.setValidatorData(data as Validator)
     }
 
     if (!!data.address) {
       this.address = data.address
     }
-
-    return this
   }
 
-  init(data) {
+  init(stats: Stats) {
     _.fill(this.history, -1)
 
     if (this.id === null && this.uptime.started === null)
       this.setState(true)
 
-    this.id = _.result(data, 'id', this.id)
+    this.id = _.result(stats, 'id', this.id)
 
-    if (!_.isUndefined(data.latency))
-      this.stats.latency = data.latency
+    if (!_.isUndefined(stats.latency))
+      this.stats.latency = stats.latency
 
-    this.setInfo(data, null)
+    this.setInfo(stats, null)
   }
 
-  setInfo(data, callback) {
-    if (!_.isUndefined(data.info)) {
-      this.info = data.info
+  setInfo(
+    stats: Stats,
+    callback: { (err: Error | string, info: NodeInfo): void | null }
+  ) {
+    if (!_.isUndefined(stats.info)) {
+      this.info = stats.info
 
-      if (!_.isUndefined(data.info.canUpdateHistory)) {
-        this.info.canUpdateHistory = _.result(data, 'info.canUpdateHistory', false)
+      if (!_.isUndefined(stats.info.canUpdateHistory)) {
+        this.info.canUpdateHistory = _.result(stats, 'info.canUpdateHistory', false)
       }
     }
 
-    if (!_.isUndefined(data.ip)) {
-      if (trusted.indexOf(data.ip) >= 0 || process.env.LITE === 'true') {
+    if (!_.isUndefined(stats.ip)) {
+      if (trusted.indexOf(stats.ip) >= 0 || process.env.LITE === 'true') {
         this.trusted = true
       }
       this.trusted = true
     }
 
-    this.spark = _.result(data, 'spark', null)
+    this.spark = _.result(stats, 'spark', null)
 
     this.setState(true)
     this.validatorData.signer = this.id
+
     if (callback !== null) {
       callback(null, this.getInfo())
     }
   }
 
-  setValidatorData(data) {
+  setValidatorData(data: Validator) {
     this.info.name = data.name || data.address
     this.info.contact = data.address
     this.trusted = true
@@ -128,7 +152,7 @@ export default class Node {
     this.address = data.address
   }
 
-  getInfo() {
+  getInfo(): NodeInfo {
     return {
       id: this.id,
       info: this.info,
@@ -149,16 +173,26 @@ export default class Node {
     }
   }
 
-  setStats(stats, history, callback) {
+  setStats(
+    stats: Stats,
+    history: number[],
+    callback: { (err: Error | string, stats: BasicStats2): void }
+  ) {
     if (!_.isUndefined(stats)) {
-      this.setBlock(_.result(stats, 'block', this.stats.block), history, function () {
+
+      const block = _.result(stats, 'block', this.stats.block)
+      this.setBlock(block, history, () => {
       })
 
-      this.setBasicStats(stats, function () {
+      this.setBasicStats(stats, () => {
       })
 
-      this.setPending(_.result(stats, 'pending', this.stats.pending), function () {
-      })
+      const pending = _.result(stats, 'pending', this.stats.pending)
+
+      if (pending) {
+        this.setPending(stats, () => {
+        })
+      }
 
       callback(null, this.getStats())
     }
@@ -166,7 +200,11 @@ export default class Node {
     callback('Stats undefined', null)
   }
 
-  setBlock(block, history, callback) {
+  setBlock(
+    block: Block,
+    history: number[],
+    callback: { (err: Error | string, blockStats: BlockStats): void }
+  ) {
     if (!_.isUndefined(block) && !_.isUndefined(block.number)) {
       if (!_.isEqual(history, this.history) || !_.isEqual(block, this.stats.block)) {
         if (block.number !== this.stats.block.number || block.hash !== this.stats.block.hash) {
@@ -187,13 +225,21 @@ export default class Node {
     }
   }
 
-  setHistory(history) {
+  private getPositives() {
+    return _.filter(this.history, function (p: number) {
+      return p >= 0
+    })
+  }
+
+  setHistory(history: number[]) {
+    // anything new?
     if (_.isEqual(history, this.history)) {
+      // no, nothing to set
       return false
     }
 
     if (!_.isArray(history)) {
-      this.history = _.fill(new Array(MAX_HISTORY), -1)
+      this.history = [].fill(-1, 0, MAX_HISTORY)
       this.stats.propagationAvg = 0
 
       return true
@@ -201,16 +247,17 @@ export default class Node {
 
     this.history = history
 
-    const positives = _.filter(history, function (p) {
-      return p >= 0
-    })
+    const positives = this.getPositives()
 
     this.stats.propagationAvg = (positives.length > 0 ? Math.round(_.sum(positives) / positives.length) : 0)
 
     return true
   }
 
-  setPending(stats, callback) {
+  setPending(
+    stats: Stats,
+    callback: { (err: Error | string, pending: Pending | null): void }
+  ) {
     if (!_.isUndefined(stats) && !_.isUndefined(stats.pending)) {
       if (!_.isEqual(stats.pending, this.stats.pending)) {
         this.stats.pending = stats.pending
@@ -227,7 +274,10 @@ export default class Node {
     }
   }
 
-  setBasicStats(stats, callback) {
+  setBasicStats(
+    stats: Stats,
+    callback: { (err: Error | string, basicStats: BasicStats | null): void }
+  ) {
     if (!_.isUndefined(stats)) {
       if (!_.isEqual(stats, {
         active: this.stats.active,
@@ -256,7 +306,10 @@ export default class Node {
     }
   }
 
-  setLatency(latency, callback) {
+  setLatency(
+    latency: number,
+    callback: { (err: Error | string, latency: Latency): void }
+  ) {
     if (!_.isUndefined(latency)) {
       if (!_.isEqual(latency, this.stats.latency)) {
         this.stats.latency = latency
@@ -273,7 +326,7 @@ export default class Node {
     }
   }
 
-  getStats() {
+  getStats(): BasicStats2 {
     return {
       id: this.id,
       stats: {
@@ -293,7 +346,7 @@ export default class Node {
     }
   }
 
-  getBlockStats() {
+  getBlockStats(): BlockStats {
     return {
       id: this.id,
       block: this.stats.block,
@@ -302,7 +355,7 @@ export default class Node {
     }
   }
 
-  getBasicStats() {
+  getBasicStats(): BasicStats {
     return {
       id: this.id,
       stats: {
@@ -319,7 +372,7 @@ export default class Node {
     }
   }
 
-  setState(active) {
+  setState(active: boolean) {
     const now = _.now()
 
     if (this.uptime.started !== null) {
@@ -353,7 +406,7 @@ export default class Node {
 
   isInactiveAndOld() {
     return (
-      this.uptime.lastStatus === false &&
+      !this.uptime.lastStatus &&
       this.uptime.lastUpdate !== null &&
       (_.now() - this.uptime.lastUpdate) > MAX_INACTIVE_TIME
     )

@@ -1,5 +1,5 @@
 export const trusted = []
 
-export const banned = []
+export const banned: string[] = []
 
-export const reserved = []
+export const reserved: string[] = []
