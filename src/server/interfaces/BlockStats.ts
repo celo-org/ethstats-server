@@ -1,4 +1,4 @@
-import { Block } from "./block";
+import { Block } from "./Block";
 
 export interface BlockStats {
   id: string

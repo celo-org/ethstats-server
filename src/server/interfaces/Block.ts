@@ -1,5 +1,5 @@
-import { Validators } from "./validators";
-import { PropagTime } from "./propagtime";
+import { Validators } from "./Validators";
+import { PropagationTime } from "./PropagationTime";
 
 export interface Block {
   number?: number
@@ -22,7 +22,7 @@ export interface Block {
   forks?: Block[]
   block?: Block
   propagation?: number
-  propagTimes?: PropagTime[]
+  propagTimes?: PropagationTime[]
   transactions?: any[]
   uncles?: any[]
 }

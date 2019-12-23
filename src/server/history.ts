@@ -2,10 +2,12 @@
 import _ from "lodash"
 // @ts-ignore
 import * as d3 from "d3"
-import { Block } from "./interfaces/block";
-import { PropagTime } from "./interfaces/propagtime";
-import { ChartData } from "./interfaces/chartdata";
-import { fa, fu, Miner } from "./interfaces/fu";
+import { Block } from "./interfaces/Block";
+import { PropagationTime } from "./interfaces/PropagationTime";
+import { ChartData } from "./interfaces/ChartData";
+import { Histogram } from "./interfaces/Histogram";
+import { HistogramEntry } from "./interfaces/HistogramEntry";
+import { Miner } from "./interfaces/Miner";
 
 const MAX_HISTORY = 2000
 const MAX_PEER_PROPAGATION = 40
@@ -150,7 +152,7 @@ export default class History {
           height: block.number,
           block: block,
           forks: [block],
-          propagTimes: Array<PropagTime>()
+          propagTimes: Array<PropagationTime>()
         }
 
         if (
@@ -288,19 +290,19 @@ export default class History {
     return this.blocks
       .slice(0, MAX_PEER_PROPAGATION)
       .map((item: Block) => {
-        const matches = item.propagTimes.filter((item: PropagTime) => item.node === id)
+        const matches = item.propagTimes.filter((item: PropagationTime) => item.node === id)
         if (matches.length > 0)
           return matches[0].propagation
         return -1
       })
   }
 
-  getBlockPropagation(): fa {
+  getBlockPropagation(): Histogram {
     const propagation: number[] = []
     let avgPropagation: number = 0
 
     _.forEach(this.blocks, function (n: Block) {
-      _.forEach(n.propagTimes, function (p: PropagTime) {
+      _.forEach(n.propagTimes, function (p: PropagationTime) {
         const prop = Math.min(MAX_PROPAGATION_RANGE, _.result(p, 'propagation', -1))
 
         if (prop >= 0)
@@ -319,7 +321,7 @@ export default class History {
 
     let freqCum = 0
 
-    const histogram = data.map((val: any): fu => {
+    const histogram = data.map((val: any): HistogramEntry => {
       freqCum += val.length
 
       const cumPercent = (freqCum / Math.max(1, propagation.length))
