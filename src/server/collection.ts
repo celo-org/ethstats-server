@@ -5,7 +5,6 @@ import Node from "./node"
 // @ts-ignore
 import * as Primus from "primus"
 import { Stats } from "./interfaces/Stats";
-import { Block } from "./interfaces/Block";
 import { Validator } from "./interfaces/Validator";
 import { Pending } from "./interfaces/Pending";
 import { Latency } from "./interfaces/Latency";
@@ -14,6 +13,7 @@ import { ChartData } from "./interfaces/ChartData";
 import { BlockStats } from "./interfaces/BlockStats";
 import { BasicStatsResponse } from "./interfaces/BasicStatsResponse";
 import { NodeStats } from "./interfaces/NodeStats";
+import { BlockData } from "./interfaces/BlockData";
 
 export default class Collection {
 
@@ -66,7 +66,7 @@ export default class Collection {
 
   addBlock(
     id: string,
-    block: Block,
+    block: BlockData,
     callback: { (err: Error | string, blockStats: BlockStats): void }
   ) {
     const node = this.getNode({validatorData: {signer: id}})

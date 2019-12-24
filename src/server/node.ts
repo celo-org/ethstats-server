@@ -3,7 +3,7 @@ import _ from 'lodash'
 import { trusted } from "./utils/config"
 // @ts-ignore
 import { Stats } from "./interfaces/Stats";
-import { Block } from "./interfaces/Block";
+import { BlockData } from "./interfaces/BlockData";
 import { Validator } from "./interfaces/Validator";
 import { Pending } from "./interfaces/Pending";
 import { NodeInfo } from "./interfaces/NodeInfo"
@@ -39,7 +39,6 @@ export default class Node {
     gasPrice: 0,
     block: {
       number: 0,
-      height: 0,
       hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
       difficulty: '0',
       totalDifficulty: '0',
@@ -176,7 +175,7 @@ export default class Node {
   }
 
   public setBlock(
-    block: Block,
+    block: BlockData,
     propagationHistory: number[],
     callback: { (err: Error | string, blockStats: BlockStats): void }
   ) {
@@ -394,7 +393,7 @@ export default class Node {
       return false
     }
 
-    if (!_.isArray(propagationHistory)) {
+    if (!propagationHistory) {
       this.propagationHistory = [].fill(-1, 0, MAX_HISTORY)
       this.stats.propagationAvg = 0
 
@@ -403,9 +402,11 @@ export default class Node {
 
     this.propagationHistory = propagationHistory
 
-    const positives = _.filter(this.propagationHistory, function (p: number) {
-      return p >= 0
-    })
+    const positives = _.filter(
+      this.propagationHistory,
+      (p: number) => {
+        return p >= 0
+      })
 
     this.stats.propagationAvg = (positives.length > 0 ? Math.round(_.sum(positives) / positives.length) : 0)
 

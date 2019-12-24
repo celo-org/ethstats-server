@@ -1,4 +1,4 @@
-import { Block } from "./Block";
+import { BlockData } from "./BlockData";
 import { Info } from "./Info";
 import { BasicStats } from "./BaiscStats";
 
@@ -12,7 +12,7 @@ export interface Stats extends BasicStats {
   signer?: string
   address?: string
   pending: number
-  block: Block
+  block: BlockData
   clientTime?: number
   info?: Info
 }
