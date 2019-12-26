@@ -1,6 +1,6 @@
+import { BasicStats } from "./BasicStats";
 import { BlockData } from "./BlockData";
 import { Info } from "./Info";
-import { BasicStats } from "./BaiscStats";
 
 export interface Stats extends BasicStats {
   id?: string

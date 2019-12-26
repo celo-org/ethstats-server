@@ -1,4 +1,4 @@
-import { BasicStats } from "./BaiscStats";
+import { BasicStats } from "./BasicStats";
 
 export interface BasicStatsResponse {
   id: string,
