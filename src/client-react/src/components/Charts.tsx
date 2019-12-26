@@ -12,7 +12,7 @@ class Charts extends PureComponent<Props, State> {
     const { charts } = this.props
 
     if (charts.length === 0) {
-      return <  div>No data</div>
+      return <div>No data</div>
     }
     return (
       <div>

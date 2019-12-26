@@ -1,13 +1,13 @@
 import React from 'react'
 import './App.css'
-import Ethstats from './components/EthStats'
+import CeloStats from './components/CeloStats'
 
 const App: React.FC = () => {
   return (
     <div className="App">
-      <Ethstats />
+      <CeloStats />
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

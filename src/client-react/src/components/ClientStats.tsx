@@ -12,7 +12,7 @@ class ClientStats extends PureComponent<Props, State> {
     const { ping } = this.props
 
     if (ping.length === 0) {
-      return <  div>No data</div>
+      return <div>No data</div>
     }
     return (
       <div>

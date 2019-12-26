@@ -1,0 +1,57 @@
+table {
+  //display: grid;
+  border-collapse: collapse;
+  min-width: 100%;
+  grid-template-columns:
+    minmax(150px, 1fr)
+    minmax(150px, 1.67fr)
+    minmax(150px, 1.67fr)
+    minmax(150px, 1.67fr)
+    minmax(150px, 3.33fr)
+    minmax(150px, 1.67fr)
+    minmax(150px, 3.33fr)
+    minmax(150px, 1.67fr);
+}
+
+thead,
+tbody,
+tr {
+  //display: contents;
+}
+
+th,
+td {
+  padding: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+td,
+tr {
+  text-align: left;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background: #6c7ae0;
+  font-weight: normal;
+  font-size: 1.1rem;
+  color: white;
+}
+
+th:last-child {
+  border: 0;
+}
+
+td {
+  font-size: 0.9rem;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  color: #808080;
+}
+
+tr:nth-child(even) td {
+  background: #f8f6ff;
+}
