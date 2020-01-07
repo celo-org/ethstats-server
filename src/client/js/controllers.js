@@ -381,7 +381,7 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
         $scope.bestStats = _.max($scope.nodes, function (node) {
           return parseInt(node.stats.block.number);
         }).stats;
-
+        console.log($scope.bestStats.block.number, (new Date()).getTime(), $scope.bestStats.block.arrived)
         $scope.lastBlock = $scope.bestStats.block.arrived;
         $scope.lastDifficulty = $scope.bestStats.block.difficulty;
       }

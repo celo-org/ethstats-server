@@ -3,6 +3,17 @@ import ReconnectingWebSocket from "reconnecting-websocket"
 import getenv from 'getenv'
 import Nodes from "./Nodes"
 import { Node } from "../interfaces/Node"
+import Block from "../interfaces/Block"
+import NodesTable from "./NodesTable";
+import BlockTimer from "./BlockTimer";
+
+
+const StatsContext = React.createContext({
+  sortBy: {
+    prop:'id',
+    direction: 1
+  }
+})
 
 interface Props {
 }
@@ -12,9 +23,14 @@ interface Event {
   data: any
 }
 
+interface ChainState {
+  bestBlock: Block
+}
+
 interface State {
   ws: ReconnectingWebSocket,
-  nodes: {[Key: string]: Node}
+  nodes: {[Key: string]: Node},
+  chainState: ChainState
 }
 
 const ethstatsURI = getenv("REACT_APP_WS_ETHSTATS", "ws://localhost:3000/primus/")
@@ -30,7 +46,11 @@ class CeloStats extends Component<Props, State> {
     })
     this.state = {
       ws,
-      nodes: {}
+      nodes: {},
+      chainState: {
+      // @ts-ignore
+        bestBlock: {}
+      }
     }
   }
 
@@ -45,6 +65,15 @@ class CeloStats extends Component<Props, State> {
     } else if (["add", "block", "pending", "stats"].includes(event.action)) {
       nodes[id] = { ...nodes[id], ...event.data }
       this.setState({ nodes })
+    }
+
+    if (event.action === "block") {
+      const { chainState } = this.state
+      if (!chainState.bestBlock.number ||
+        event.data.block.number > chainState.bestBlock.number) {
+        chainState.bestBlock = event.data.block
+        this.setState( {chainState})
+      }
     }
   }
 
@@ -63,10 +92,24 @@ class CeloStats extends Component<Props, State> {
   }
 
   public render() {
+    const { chainState, nodes } = this.state
     return (
-      <div>
-        <Nodes nodes={ Object.values(this.state.nodes) }/>
-      </div>
+      <StatsContext.Provider value={
+        {
+          sortBy: { prop: 'id', direction: 1 }
+        }
+      }>
+        <div>
+          <div>
+            Best block: { chainState.bestBlock.number }
+          </div>
+          <div>
+            Last block: <BlockTimer receivedTime={chainState.bestBlock.arrived}/>
+          </div>
+          <Nodes nodes={ Object.values(nodes) }/>
+          {/*<NodesTable nodes={ Object.values(nodes) }/>*/}
+        </div>
+      </StatsContext.Provider>
     )
   }
 }

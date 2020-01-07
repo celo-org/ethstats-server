@@ -14,6 +14,7 @@ netStatsApp.run(function($rootScope) {
 netStatsApp.factory('socket', function ($rootScope) {
 	return new Primus({
 		// url: "your url here"
+		//  url: "wss://baklava-ethstats.celo-testnet.org/primus"
 	}, {
 		pingTimeout: 5 * 1000,
 		timeout: 2 * 1000

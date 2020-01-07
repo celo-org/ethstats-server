@@ -12,7 +12,7 @@ const BlockTimer = ({receivedTime} : any) => {
   }, 1000);
 
   return (
-    <div>{timeLeft}</div>
+    <span>{timeLeft}</span>
   )
 }
 

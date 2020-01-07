@@ -1,3 +1,5 @@
+import Block from './Block'
+
 export interface Node {
   block: Block
   history: number[]
@@ -31,29 +33,4 @@ export interface Stats {
   peers: number
   syncing: boolean
   uptime: number
-}
-
-export interface Block {
-  number: number
-  hash: string
-  arrived: number
-  blockRemain: number
-  difficulty: string
-  epochSize: number
-  fork: number
-  gasLimit: number
-  gasUsed: number
-  miner: string
-  parentHash: string
-  propagation: number
-  received: number
-  stateRoot: number
-  time: number
-  timestamp: number
-  totalDifficulty: string
-  transactions: any[]
-  transactionsRoot: string
-  trusted: boolean
-  uncles: any[]
-  validators: any
 }
