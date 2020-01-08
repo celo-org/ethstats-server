@@ -27,7 +27,7 @@ export default class Collection {
     callback: { (err: Error | string, nodeInfo: NodeInfo): void }
   ): void {
     const node: Node = this.getNodeOrNew(
-      {validatorData: {signer: nodeInformation.stats.id}},
+      {validatorData: {signer: nodeInformation.nodeData.id}},
       nodeInformation
     )
     node.setInfo(
@@ -73,7 +73,7 @@ export default class Collection {
     callbackUpdatedStats: { (err: Error | string, blockStats: BlockStats): void },
     callbackHighestBlock: { (err: Error | string, highestBlock: number): void }
   ): void {
-    const node = this.getNode({validatorData: {signer: id}})
+    const node: Node = this.getNode({validatorData: {signer: id}})
 
     if (!node) {
       console.error(
@@ -112,7 +112,7 @@ export default class Collection {
     stats: Stats,
     callback: { (err: Error | string, pending: Pending | null): void }
   ): void {
-    const node = this.getNode({validatorData: {signer: id}})
+    const node: Node = this.getNode({validatorData: {signer: id}})
 
     if (!node) {
       return
@@ -126,7 +126,7 @@ export default class Collection {
     stats: Stats,
     callback: { (err: Error | string, basicStats: BasicStatsResponse | null): void }
   ): void {
-    const node = this.getNode({validatorData: {signer: id}})
+    const node: Node = this.getNode({validatorData: {signer: id}})
 
     if (!node) {
       callback('Node not found', null)
@@ -140,7 +140,7 @@ export default class Collection {
     latency: number,
     callback: { (err: Error | string, latency: Latency): void }
   ): void {
-    const node = this.getNode({validatorData: {signer: id}})
+    const node: Node = this.getNode({validatorData: {signer: id}})
 
     if (!node) {
       return
@@ -203,7 +203,9 @@ export default class Collection {
     search: object,
     data: NodeInformation | Validator
   ): Node {
-    return this.getNodeByIndex(this.getIndexOrNew(search, data))
+    return this.getNodeByIndex(
+      this.getIndexOrNew(search, data)
+    )
   }
 
   public all(): Node[] {
