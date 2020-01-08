@@ -25,7 +25,6 @@ import { BasicStatsResponse } from "./interfaces/BasicStatsResponse";
 import { Proof } from "./interfaces/Proof";
 import { NodeResponseLatency } from "./interfaces/NodeResponseLatency";
 import { Pending } from "./interfaces/Pending";
-import { Stats } from "./interfaces/Stats";
 import { NodeInfo } from "./interfaces/NodeInfo";
 import { ChartData } from "./interfaces/ChartData";
 import { BlockStats } from "./interfaces/BlockStats";
@@ -43,6 +42,7 @@ import { NodeResponseBlock } from "./interfaces/NodeResponseBlock";
 import { BlockWrapped } from "./interfaces/BlockWrapped";
 import { NodeResponseInfo } from "./interfaces/NodeResponseInfo";
 import { InfoWrapped } from "./interfaces/InfoWrapped";
+import { Wrapper } from "./interfaces/Wrapper";
 
 // general config
 const clientPingTimeout = 5 * 1000
@@ -103,22 +103,25 @@ export default class Server {
     console.log(`Server started and listening on port: ${port}!`)
   }
 
-  static sanitize(stats: StatsWrapped | Stats): boolean {
+  static sanitize(stats: Wrapper): boolean {
     return (
       !_.isUndefined(stats) && !_.isUndefined(stats.id)
     )
   }
 
-  static authorize(proof: Proof, stats: Stats | InfoWrapped): boolean {
+  static authorize(
+    proof: Proof,
+    stats: InfoWrapped
+  ): boolean {
     let isAuthorized = false
 
     if (
-      Server.sanitize(stats)
-      && !_.isUndefined(proof)
-      && !_.isUndefined(proof.publicKey)
-      && !_.isUndefined(proof.signature)
-      && reserved.indexOf(stats.id) < 0
-      && trusted
+      Server.sanitize(stats) &&
+      !_.isUndefined(proof) &&
+      !_.isUndefined(proof.publicKey) &&
+      !_.isUndefined(proof.signature) &&
+      reserved.indexOf(stats.id) < 0 &&
+      trusted
         .map(address => address && address.toLowerCase())
         .indexOf(proof.address) >= 0
     ) {
@@ -248,9 +251,11 @@ export default class Server {
 
         console.info('API', 'CON', 'Hello', stats.id)
 
+        const id = proof.address;
+
         if (!_.isUndefined(stats.info)) {
           const nodeData: NodeData = {
-            id: proof.address,
+            id,
             address: proof.address,
             ip: spark.address.ip,
             spark: spark.id,
@@ -291,19 +296,31 @@ export default class Server {
           proof: Proof
         } = data
 
-        if (Server.sanitize(stats) && !_.isUndefined(stats.block)) {
+        if (
+          Server.sanitize(stats) &&
+          !_.isUndefined(stats.block)
+        ) {
           const id = proof.address
 
-          if (stats.block.validators && stats.block.validators.registered) {
+          if (
+            stats.block.validators &&
+            stats.block.validators.registered
+          ) {
             stats.block.validators.registered.forEach(validator => {
               validator.registered = true
 
               // trust registered validators and signers - not safe
-              if (validator.address && trusted.indexOf(validator.address) === -1) {
+              if (
+                validator.address &&
+                trusted.indexOf(validator.address) === -1
+              ) {
                 trusted.push(validator.address)
               }
 
-              if (validator.signer && trusted.indexOf(validator.signer) === -1) {
+              if (
+                validator.signer &&
+                trusted.indexOf(validator.signer) === -1
+              ) {
                 trusted.push(validator.signer)
               }
 
