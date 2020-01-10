@@ -286,6 +286,8 @@ export default class Server {
 
         const id = proof.address;
 
+        const id = proof.address;
+
         if (!_.isUndefined(stats.info)) {
           const nodeData: NodeData = {
             id,
