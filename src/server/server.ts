@@ -47,6 +47,9 @@ import { Directions } from "./statistics/Directions";
 import { Statistics } from "./statistics/Statistics";
 import { IDictionary } from "./interfaces/IDictionary";
 import { Wrapper } from "./interfaces/Wrapper";
+import { Validators } from "./interfaces/Validators";
+import { Block } from "./interfaces/Block";
+import { Stats } from "./interfaces/Stats";
 
 // general config
 const clientPingTimeout = 5 * 1000
@@ -64,6 +67,8 @@ if (process.env.BANNED_ADDRESSES) {
 if (process.env.RESERVED_ADDRESSES) {
   reserved.push(...process.env.RESERVED_ADDRESSES.split(','))
 }
+
+
 
 export default class Server {
 
@@ -192,7 +197,7 @@ export default class Server {
     return isAuthorized
   }
 
-  private clientWrite(payload: any) {
+  private clientWrite(payload: object) {
     this.client.forEach((spark: Primus.spark) => {
       spark.write(payload)
 
@@ -262,65 +267,13 @@ export default class Server {
           proof: Proof
         } = data
 
-        if (
-          banned.indexOf(spark.address.ip) >= 0 ||
-          !Server.isAuthorize(proof, stats)
-        ) {
-          console.error(
-            'API', 'CON', 'Node Closed: wrong auth',
-            `'${stats.id}'`, `(${spark.id})`,
-            'address:', proof.address
-          )
-
-          spark.end(undefined, {reconnect: false})
-
-          return
-        }
-
-        delete (this.danglingConnections[spark.id])
-
-        console.info(
-          'API', 'CON',
-          'Hello', stats.id
-        )
-
         const id = proof.address;
 
-        if (!_.isUndefined(stats.info)) {
-          const nodeData: NodeData = {
-            id,
-            address: proof.address,
-            ip: spark.address.ip,
-            spark: spark.id,
-            latency: spark.latency || 0
-          }
-
-          this.nodes.add(
-            <NodeInformation>{
-              nodeData,
-              stats
-            },
-            (err: Error | string, info: NodeInfo) => {
-              if (err) {
-                console.error('API', 'CON', 'Connection error:', err)
-                return false
-              }
-
-              if (info) {
-                spark.emit('ready')
-
-                this.statistics.add(Sides.Node, Directions.Out)
-
-                console.success(
-                  'API', 'CON', 'Node',
-                  `'${stats.id}'`, `(${spark.id})`, 'Connected')
-
-                this.clientWrite({
-                  action: 'add',
-                  data: info
-                })
-              }
-            })
+        if (
+          this.handleAuth(id, proof, stats, spark) &&
+          !_.isUndefined(stats.info)
+        ) {
+          this.handleNode(id, proof, stats, spark)
         }
       })
 
@@ -341,80 +294,10 @@ export default class Server {
         ) {
           const id = proof.address
 
-          if (
-            stats.block.validators &&
-            stats.block.validators.registered
-          ) {
-            stats.block.validators.registered.forEach(validator => {
-              validator.registered = true
+          // handle validator information from block
+          this.handleValidators(stats.block.validators)
 
-              // trust registered validators and signers - not safe
-              if (
-                validator.address &&
-                trusted.indexOf(validator.address) === -1
-              ) {
-                trusted.push(validator.address)
-              }
-
-              if (
-                validator.signer &&
-                trusted.indexOf(validator.signer) === -1
-              ) {
-                trusted.push(validator.signer)
-              }
-
-              const search = {id: validator.address}
-              const index: number = this.nodes.getIndex(search)
-              const node: Node = this.nodes.getNodeOrNew(search, validator)
-
-              if (index < 0) {
-                // only if new node
-                node.integrateValidatorData(validator)
-              }
-
-              node.setValidatorData(validator)
-
-              if (stats.block.validators.elected.indexOf(validator.address) > -1) {
-                node.setValidatorElected(true)
-              }
-
-              node.setValidatorRegistered(true)
-            })
-          }
-
-          this.nodes.addBlock(
-            id, stats.block,
-            (err: Error | string, updatedStats: BlockStats) => {
-
-              if (err) {
-                console.error('API', 'BLK', 'Block error:', err, updatedStats)
-              } else if (updatedStats) {
-
-                this.clientWrite({
-                  action: 'block',
-                  data: updatedStats
-                })
-
-                console.info('API', 'BLK',
-                  'Block:', updatedStats.block['number'],
-                  'td:', updatedStats.block['totalDifficulty'],
-                  'from:', updatedStats.id, 'ip:', spark.address.ip)
-
-                this.nodes.getCharts()
-              }
-            },
-            (err: Error | string, highestBlock: number) => {
-              if (err) {
-                console.error(err)
-              } else {
-                this.clientWrite({
-                  action: 'lastBlock',
-                  number: highestBlock
-                })
-              }
-
-            }
-          )
+          this.handleBlock(id, spark.address.ip, stats.block)
 
         } else {
           console.error('API', 'BLK', 'Block error:', data)
@@ -436,29 +319,9 @@ export default class Server {
           Server.isInputValid(stats) &&
           !_.isUndefined(stats.stats)
         ) {
-
           const id = proof.address
 
-          this.nodes.updatePending(
-            id, stats.stats,
-            (err: Error | string, pending: Pending) => {
-              if (err) {
-                console.error('API', 'TXS', 'Pending error:', err)
-              }
-
-              if (pending) {
-                this.clientWrite({
-                  action: 'pending',
-                  data: pending
-                })
-
-                console.success(
-                  'API', 'TXS', 'Pending:',
-                  pending['pending'],
-                  'from:', pending.id
-                )
-              }
-            })
+          this.handlePending(id, stats.stats)
         } else {
           console.error('API', 'TXS', 'Pending error:', data)
         }
@@ -483,23 +346,7 @@ export default class Server {
           // why? why not spark.id like everywhere?
           const id = proof.address
 
-          this.nodes.updateStats(
-            id, stats.stats,
-            (err: Error | string, basicStats: BasicStatsResponse) => {
-              if (err) {
-                console.error('API', 'STA', 'Stats error:', err)
-              } else {
-
-                if (basicStats) {
-                  this.clientWrite({
-                    action: 'stats',
-                    data: basicStats
-                  })
-
-                  console.info('API', 'STA', 'Stats from:', id)
-                }
-              }
-            })
+          this.handleStatsUpdate(id, stats.stats)
         }
       })
 
@@ -516,24 +363,14 @@ export default class Server {
 
         if (Server.isInputValid(stats)) {
           const id = proof.address
-          const start = (!_.isUndefined(stats.clientTime) ? stats.clientTime : null)
 
-          spark.emit(
-            'node-pong',
-            <NodePong>{
-              clientTime: start,
-              serverTime: _.now()
-            }
-          )
-
-          this.statistics.add(Sides.Node, Directions.Out)
-
-          console.info('API', 'PIN', 'Ping from:', id)
+          this.handleNodePing(id, stats, spark)
         }
       })
 
       spark.on('latency', (data: NodeResponseLatency): void => {
         this.statistics.add(Sides.Node, Directions.In)
+
         const {
           stats,
           proof
@@ -545,65 +382,19 @@ export default class Server {
         if (Server.isInputValid(stats)) {
 
           const id = proof.address
-          this.nodes.updateLatency(
-            id, stats.latency,
-            (err, latency) => {
-              if (err) {
-                console.error('API', 'PIN', 'Latency error:', err)
-              }
 
-              if (latency) {
-                console.info(
-                  'API', 'PIN',
-                  'Latency:', latency.latency,
-                  'from:', id
-                )
-              }
-            }
-          )
+          this.handleLatency(id, stats.latency)
         }
       })
 
       spark.on('end', (): void => {
-          this.statistics.add(Sides.Node, Directions.In)
-          // use spark id here, we have nothing else
-          const id = spark.id;
+        this.statistics.add(Sides.Node, Directions.In)
 
-          // it this was caused by a failed auth do not try this
-          if (this.danglingConnections[id]) {
-            delete (this.danglingConnections[id])
-          } else {
-            this.nodes.inactive(
-              id,
-              (err: Error | string, nodeStats: NodeStats
-              ) => {
-                if (err) {
-                  console.error(
-                    'API', 'CON',
-                    'Connection with:', spark.address.ip, id,
-                    'ended.', 'Error:', err
-                  )
-                } else {
-                  this.clientWrite({
-                    action: 'inactive',
-                    data: nodeStats
-                  })
+        // use spark id here, we have nothing else
+        const id = spark.id;
 
-                  console.success(
-                    'API', 'CON', 'Node:',
-                    `'${nodeStats.name}'`, `(${id})`,
-                    'disconnected.'
-                  )
-                }
-              })
-          }
-
-          console.success(
-            'API', 'CON', 'Node Close:',
-            spark.address.ip, `'${id}'`
-          )
-        }
-      )
+        this.handleNodeEnd(id, spark.address.ip)
+      })
     })
   }
 
@@ -622,41 +413,21 @@ export default class Server {
       spark.on('ready', (): void => {
         this.statistics.add(Sides.Client, Directions.In)
 
-        spark.emit(
-          'init',
-          {nodes: this.nodes.all()}
-        )
+        const id = spark.id
 
-        this.statistics.add(Sides.Client, Directions.Out)
-
-        this.nodes.getCharts()
-
-        console.success(
-          'API', 'CON',
-          'Client', `'${spark.id}'`,
-          'Connected'
-        )
+        this.handleReady(id, spark)
       })
 
       spark.on('client-pong', (data: ClientPong): void => {
         this.statistics.add(Sides.Client, Directions.In)
 
-        const serverTime = _.get(data, 'serverTime', 0)
-        const latency = Math.ceil((_.now() - serverTime) / 2)
-
-        spark.emit(
-          'client-latency',
-          {latency: latency}
-        )
-
-        this.statistics.add(Sides.Client, Directions.Out)
+        this.handleClientPong(data, spark)
       })
 
       spark.on('end', () => {
-        console.success(
-          'API', 'CON', 'Client Close:',
-          spark.address.ip, `'${spark.id}'`
-        )
+
+        const id = spark.id;
+        this.handleClientEnd(id, spark.address.ip)
       })
 
     })
@@ -683,5 +454,340 @@ export default class Server {
     this.initClient()
     this.initNodes()
     this.wireup()
+  }
+
+  private handleBlock(
+    id: string,
+    ip: string,
+    block: Block
+  ): void {
+    this.nodes.addBlock(
+      id, block,
+      (err: Error | string, updatedStats: BlockStats) => {
+        if (err) {
+          console.error('API', 'BLK', 'Block error:', err, updatedStats)
+        } else if (updatedStats) {
+
+          this.clientWrite({
+            action: 'block',
+            data: updatedStats
+          })
+
+          console.info('API', 'BLK',
+            'Block:', updatedStats.block['number'],
+            'td:', updatedStats.block['totalDifficulty'],
+            'from:', updatedStats.id, 'ip:', ip)
+
+          this.nodes.getCharts()
+        }
+      },
+      (err: Error | string, highestBlock: number) => {
+        if (err) {
+          console.error(err)
+        } else {
+          this.clientWrite({
+            action: 'lastBlock',
+            number: highestBlock
+          })
+        }
+      }
+    )
+  }
+
+  private handlePending(
+    id: string,
+    stats: Stats
+  ): void {
+    this.nodes.updatePending(
+      id, stats,
+      (err: Error | string, pending: Pending) => {
+        if (err) {
+          console.error('API', 'TXS', 'Pending error:', err)
+        }
+
+        if (pending) {
+          this.clientWrite({
+            action: 'pending',
+            data: pending
+          })
+
+          console.success(
+            'API', 'TXS', 'Pending:',
+            pending['pending'],
+            'from:', pending.id
+          )
+        }
+      }
+    )
+  }
+
+  private handleValidators(
+    validators: Validators
+  ): void {
+    if (validators && validators.registered) {
+      validators.registered.forEach(validator => {
+        validator.registered = true
+
+        // trust registered validators and signers - not safe
+        if (
+          validator.address &&
+          trusted.indexOf(validator.address) === -1
+        ) {
+          trusted.push(validator.address)
+        }
+
+        if (
+          validator.signer &&
+          trusted.indexOf(validator.signer) === -1
+        ) {
+          trusted.push(validator.signer)
+        }
+
+        const search = {id: validator.address}
+        const index: number = this.nodes.getIndex(search)
+        const node: Node = this.nodes.getNodeOrNew(search, validator)
+
+        if (index < 0) {
+          // only if new node
+          node.integrateValidatorData(validator)
+        }
+
+        node.setValidatorData(validator)
+
+        if (validators.elected.indexOf(validator.address) > -1) {
+          node.setValidatorElected(true)
+        }
+
+        node.setValidatorRegistered(true)
+      })
+    }
+  }
+
+  private handleStatsUpdate(
+    id: string,
+    stats: Stats
+  ): void {
+    this.nodes.updateStats(
+      id, stats,
+      (err: Error | string, basicStats: BasicStatsResponse) => {
+        if (err) {
+          console.error('API', 'STA', 'Stats error:', err)
+        } else {
+
+          if (basicStats) {
+            this.clientWrite({
+              action: 'stats',
+              data: basicStats
+            })
+
+            console.info(
+              'API', 'STA',
+              'Stats from:', id
+            )
+          }
+        }
+      })
+  }
+
+  private handleLatency(
+    id: string,
+    latency: number
+  ): void {
+    this.nodes.updateLatency(
+      id, latency,
+      (err: Error | string, latency: Latency): void => {
+        if (err) {
+          console.error('API', 'PIN', 'Latency error:', err)
+        }
+
+        if (latency) {
+          console.info(
+            'API', 'PIN',
+            'Latency:', latency.latency,
+            'from:', id
+          )
+        }
+      }
+    )
+  }
+
+  private handleNodeEnd(
+    id: string,
+    ip: string
+  ): void {
+
+    // it this was caused by a failed auth do not try this
+    if (this.danglingConnections[id]) {
+      delete (this.danglingConnections[id])
+    } else {
+      this.nodes.inactive(
+        id,
+        (err: Error | string, nodeStats: NodeStats
+        ) => {
+          if (err) {
+            console.error(
+              'API', 'CON',
+              'Connection with:', id,
+              'ended.', 'Error:', err
+            )
+          } else {
+            this.clientWrite({
+              action: 'inactive',
+              data: nodeStats
+            })
+
+            console.success(
+              'API', 'CON', 'Node:',
+              `'${nodeStats.name}'`, `(${id})`,
+              'disconnected.'
+            )
+          }
+        })
+    }
+
+    console.success(
+      'API', 'CON', 'Node Close:',
+      ip, `'${id}'`
+    )
+  }
+
+  private handleNodePing(
+    id: string,
+    stats: NodePing,
+    spark: Primus.spark
+  ): void {
+    const start = (!_.isUndefined(stats.clientTime) ? stats.clientTime : null)
+
+    spark.emit(
+      'node-pong',
+      <NodePong>{
+        clientTime: start,
+        serverTime: _.now()
+      }
+    )
+
+    this.statistics.add(Sides.Node, Directions.Out)
+
+    console.info('API', 'PIN', 'Ping from:', id)
+  }
+
+  private handleAuth(
+    id: string,
+    proof: Proof,
+    stats: InfoWrapped,
+    spark: Primus.spark
+  ): boolean {
+
+    if (
+      banned.indexOf(spark.address.ip) >= 0 ||
+      !Server.isAuthorize(proof, stats)
+    ) {
+      console.error(
+        'API', 'CON', 'Node Closed: wrong auth',
+        `'${stats.id}'`, `(${spark.id})`,
+        'address:', proof.address
+      )
+
+      spark.end(undefined, {reconnect: false})
+
+      return false
+    }
+
+    delete (this.danglingConnections[id])
+
+    console.info(
+      'API', 'CON',
+      'Hello', stats.id
+    )
+
+    return true
+  }
+
+  private handleNode(
+    id: string,
+    proof: Proof,
+    stats: InfoWrapped,
+    spark: Primus.spark
+  ): void {
+
+    const nodeData: NodeData = {
+      id,
+      address: proof.address,
+      ip: spark.address.ip,
+      spark: spark.id,
+      latency: spark.latency || 0
+    }
+
+    this.nodes.add(
+      <NodeInformation>{
+        nodeData,
+        stats
+      },
+      (err: Error | string, info: NodeInfo): void => {
+        if (err) {
+          console.error('API', 'CON', 'Connection error:', err)
+          return
+        }
+
+        if (info) {
+          spark.emit('ready')
+
+          this.statistics.add(Sides.Node, Directions.Out)
+
+          console.success(
+            'API', 'CON', 'Node',
+            `'${stats.id}'`, `(${spark.id})`, 'Connected')
+
+          this.clientWrite({
+            action: 'add',
+            data: info
+          })
+        }
+      })
+  }
+
+  private handleReady(
+    id: string,
+    spark: Primus.spark
+  ): void {
+    spark.emit(
+      'init',
+      {nodes: this.nodes.all()}
+    )
+
+    this.statistics.add(Sides.Client, Directions.Out)
+
+    this.nodes.getCharts()
+
+    console.success(
+      'API', 'CON',
+      'Client', `'${id}'`,
+      'Connected'
+    )
+  }
+
+  private handleClientPong(
+    data: ClientPong,
+    spark: Primus.spark
+  ): void {
+    const serverTime = _.get(data, 'serverTime', 0)
+    const latency = Math.ceil((_.now() - serverTime) / 2)
+
+    spark.emit(
+      'client-latency',
+      {latency: latency}
+    )
+
+    this.statistics.add(Sides.Client, Directions.Out)
+  }
+
+  private handleClientEnd(
+    id: string,
+    ip: string
+  ): void {
+    console.success(
+      'API', 'CON', 'Client Close:',
+      ip, `'${id}'`
+    )
   }
 }
