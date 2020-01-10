@@ -46,6 +46,7 @@ import { Sides } from "./statistics/Sides";
 import { Directions } from "./statistics/Directions";
 import { Statistics } from "./statistics/Statistics";
 import { IDictionary } from "./interfaces/IDictionary";
+import { Wrapper } from "./interfaces/Wrapper";
 
 // general config
 const clientPingTimeout = 5 * 1000
@@ -108,7 +109,7 @@ export default class Server {
     )
   }
 
-  static isInputValid(stats: StatsWrapped): boolean {
+  static isInputValid(stats: Wrapper): boolean {
     return (
       !_.isUndefined(stats) && !_.isUndefined(stats.id)
     )
@@ -283,9 +284,11 @@ export default class Server {
           'Hello', stats.id
         )
 
+        const id = proof.address;
+
         if (!_.isUndefined(stats.info)) {
           const nodeData: NodeData = {
-            id: proof.address,
+            id,
             address: proof.address,
             ip: spark.address.ip,
             spark: spark.id,
@@ -338,16 +341,25 @@ export default class Server {
         ) {
           const id = proof.address
 
-          if (stats.block.validators && stats.block.validators.registered) {
+          if (
+            stats.block.validators &&
+            stats.block.validators.registered
+          ) {
             stats.block.validators.registered.forEach(validator => {
               validator.registered = true
 
               // trust registered validators and signers - not safe
-              if (validator.address && trusted.indexOf(validator.address) === -1) {
+              if (
+                validator.address &&
+                trusted.indexOf(validator.address) === -1
+              ) {
                 trusted.push(validator.address)
               }
 
-              if (validator.signer && trusted.indexOf(validator.signer) === -1) {
+              if (
+                validator.signer &&
+                trusted.indexOf(validator.signer) === -1
+              ) {
                 trusted.push(validator.signer)
               }
 
