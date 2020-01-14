@@ -9,6 +9,7 @@ import Controller from "./Controller";
 import { createServer } from "http"
 import routes from "./routes"
 import {
+  cfg,
   banned,
   reserved,
   trusted
@@ -29,15 +30,6 @@ import { Sides } from "./statistics/Sides";
 import { Directions } from "./statistics/Directions";
 import { IDictionary } from "./interfaces/IDictionary";
 import { isInputValid } from "./utils/isInputValid";
-
-// general config
-const cfg = {
-  port: process.env.PORT || 3000,
-  compression: process.env.COMPRESSION || false,
-  headersTimeout: 0.9 * 1000,
-  maxHeadersCount: 0,
-  timeout: 0.6 * 1000
-}
 
 // add trusted from env
 if (process.env.TRUSTED_ADDRESSES) {
