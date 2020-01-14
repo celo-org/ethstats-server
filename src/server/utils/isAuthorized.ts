@@ -1,14 +1,16 @@
 import { Proof } from "../interfaces/Proof";
 import { InfoWrapped } from "../interfaces/InfoWrapped";
 import { reserved, trusted } from "./config";
-import { Keccak } from "sha3";
 // @ts-ignore
 import { ec as EC } from "elliptic"
 // @ts-ignore
 import { KeyPair } from "elliptic/lib/elliptic/ec"
 import { isInputValid } from "./isInputValid";
+import { hash } from "./hash";
 
-export function isAuthorize(
+const secp256k1 = new EC('secp256k1')
+
+export function isAuthorized(
   proof: Proof,
   stats: InfoWrapped
 ): boolean {
@@ -21,11 +23,20 @@ export function isAuthorize(
       .map(address => address && address.toLowerCase())
       .indexOf(proof.address) >= 0
   ) {
-    const hasher = new Keccak(256)
-    hasher.update(JSON.stringify(stats))
 
-    const msgHash = hasher.digest('hex')
-    const secp256k1 = new EC('secp256k1')
+    // check that msg hash is equal to msg hash from proof
+    const msgHash = hash(JSON.stringify(stats))
+
+    if (!(msgHash === proof.msgHash.substr(2))) {
+      console.error(
+        'API', 'SIG',
+        'Message hash did not match',
+        msgHash, proof.msgHash.substr(2)
+      )
+      return false
+    }
+
+    // recover key from public key
     const pubkeyNoZeroX = proof.publicKey.substr(2)
 
     let pubkey: KeyPair
@@ -37,10 +48,9 @@ export function isAuthorize(
       return false
     }
 
-    const addressHasher = new Keccak(256)
-    addressHasher.update(pubkeyNoZeroX.substr(2), 'hex')
-
-    const addressHash = addressHasher.digest('hex').substr(24)
+    // compare address
+    const addressHash = hash(pubkeyNoZeroX.substr(2), 'hex')
+      .substr(24)
 
     if (!(addressHash.toLowerCase() === proof.address.substr(2).toLowerCase())) {
       console.error(
@@ -48,8 +58,10 @@ export function isAuthorize(
         'Address hash did not match', addressHash,
         proof.address.substr(2)
       )
+      return false
     }
 
+    // create signature
     const signature: {
       r: string
       s: string
@@ -58,15 +70,7 @@ export function isAuthorize(
       s: proof.signature.substr(66, 64)
     }
 
-    if (!(msgHash === proof.msgHash.substr(2))) {
-      console.error(
-        'API', 'SIG',
-        'Message hash did not match',
-        msgHash, proof.msgHash.substr(2)
-      )
-      return false
-    }
-
+    // validate sig
     try {
       isAuthorized = pubkey.verify(msgHash, signature)
       if (!isAuthorized) {
@@ -77,6 +81,10 @@ export function isAuthorize(
       console.error('API', 'SIG', 'Signature Error', e.message)
       return false
     }
+  } else {
+    console.error(
+      'API', 'SIG', 'Input data malformed'
+    )
   }
 
   return isAuthorized

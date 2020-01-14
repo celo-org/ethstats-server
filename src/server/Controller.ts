@@ -24,7 +24,7 @@ import { NodeStats } from "./interfaces/NodeStats";
 import { ClientPong } from "./interfaces/ClientPong";
 import { NodePing } from "./interfaces/NodePing";
 import { NodePong } from "./interfaces/NodePong";
-import { isAuthorize } from "./utils/isAuthorized";
+import { isAuthorized } from "./utils/isAuthorized";
 
 const clientPingTimeout = 5 * 1000
 const nodeCleanupTimeout = 1000 * 60 * 60
@@ -367,7 +367,7 @@ export default class Controller {
 
     if (
       banned.indexOf(spark.address.ip) >= 0 ||
-      !isAuthorize(proof, stats)
+      !isAuthorized(proof, stats)
     ) {
       console.error(
         'API', 'CON', 'Node Closed: wrong auth',
