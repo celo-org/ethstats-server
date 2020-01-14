@@ -8,12 +8,7 @@ import * as primusSparkLatency from "primus-spark-latency"
 import Controller from "./Controller";
 import { createServer } from "http"
 import routes from "./routes"
-import {
-  cfg,
-  banned,
-  reserved,
-  trusted
-} from "./utils/config"
+import { cfg } from "./utils/config"
 import { Proof } from "./interfaces/Proof";
 import { NodeResponseLatency } from "./interfaces/NodeResponseLatency";
 import { StatsWrapped } from "./interfaces/StatsWrapped";
@@ -30,17 +25,6 @@ import { Sides } from "./statistics/Sides";
 import { Directions } from "./statistics/Directions";
 import { IDictionary } from "./interfaces/IDictionary";
 import { isInputValid } from "./utils/isInputValid";
-
-// add trusted from env
-if (process.env.TRUSTED_ADDRESSES) {
-  trusted.push(...process.env.TRUSTED_ADDRESSES.split(','))
-}
-if (process.env.BANNED_ADDRESSES) {
-  banned.push(...process.env.BANNED_ADDRESSES.split(','))
-}
-if (process.env.RESERVED_ADDRESSES) {
-  reserved.push(...process.env.RESERVED_ADDRESSES.split(','))
-}
 
 export default class Server {
 

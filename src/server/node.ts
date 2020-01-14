@@ -2,7 +2,7 @@ import {
   isEqual,
   result
 } from "lodash"
-import { trusted } from "./utils/config"
+import { cfg, trusted } from "./utils/config"
 import { Stats } from "./interfaces/Stats";
 import { Block } from "./interfaces/Block";
 import { Validator } from "./interfaces/Validator";
@@ -16,9 +16,6 @@ import { Uptime } from "./interfaces/Uptime";
 import { NodeStats } from "./interfaces/NodeStats";
 import { NodeDetails } from "./interfaces/NodeDetails";
 import { NodeInformation } from "./interfaces/NodeInformation";
-
-const MAX_HISTORY = 40
-const MAX_INACTIVE_TIME = 1000 * 60 * 60 * 4
 
 export default class Node {
 
@@ -98,7 +95,7 @@ export default class Node {
   public init(
     nodeInformation: NodeInformation
   ) {
-    this.propagationHistory.fill(-1, 0, MAX_HISTORY)
+    this.propagationHistory.fill(-1, 0, cfg.maxPropagationHistory)
 
     if (
       this.id === null &&
@@ -225,7 +222,7 @@ export default class Node {
     propagationHistory: number[],
     callback: { (err: Error | string, blockStats: BlockStats): void }
   ) {
-    if (block && block.number) {
+    if (block && !isNaN(block.number)) {
 
       if (
         !isEqual(propagationHistory, this.propagationHistory) ||
@@ -356,7 +353,7 @@ export default class Node {
     return (
       !this.uptime.lastStatus &&
       this.uptime.lastUpdate !== null &&
-      (Date.now() - this.uptime.lastUpdate) > MAX_INACTIVE_TIME
+      (Date.now() - this.uptime.lastUpdate) > cfg.maxInactiveTime
     )
   }
 
@@ -446,7 +443,7 @@ export default class Node {
     }
 
     if (!propagationHistory) {
-      this.propagationHistory = [].fill(-1, 0, MAX_HISTORY)
+      this.propagationHistory = [].fill(-1, 0, cfg.maxPropagationHistory)
       this.stats.propagationAvg = 0
 
       return true

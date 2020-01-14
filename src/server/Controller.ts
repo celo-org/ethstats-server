@@ -17,7 +17,7 @@ import { BlockStats } from "./interfaces/BlockStats";
 import { Stats } from "./interfaces/Stats";
 import { Pending } from "./interfaces/Pending";
 import { Validators } from "./interfaces/Validators";
-import { banned, trusted } from "./utils/config";
+import { banned, cfg, trusted } from "./utils/config";
 import { BasicStatsResponse } from "./interfaces/BasicStatsResponse";
 import { Latency } from "./interfaces/Latency";
 import { NodeStats } from "./interfaces/NodeStats";
@@ -25,10 +25,6 @@ import { ClientPong } from "./interfaces/ClientPong";
 import { NodePing } from "./interfaces/NodePing";
 import { NodePong } from "./interfaces/NodePong";
 import { isAuthorized } from "./utils/isAuthorized";
-
-const clientPingTimeout = 5 * 1000
-const nodeCleanupTimeout = 1000 * 60 * 60
-const statisticsInterval = 60 * 1000
 
 export default class Controller {
   private readonly nodes: Collection
@@ -67,7 +63,7 @@ export default class Controller {
           serverTime: Date.now()
         }
       })
-    }, clientPingTimeout)
+    }, cfg.clientPingTimeout)
 
     // Cleanup old inactive nodes
     setInterval(() => {
@@ -78,7 +74,7 @@ export default class Controller {
 
       this.nodes.getCharts()
 
-    }, nodeCleanupTimeout)
+    }, cfg.nodeCleanupTimeout)
 
     // print statistics
     setInterval(() => {
@@ -89,7 +85,7 @@ export default class Controller {
       this.api.forEach(() => nodes++);
 
       this.statistics.print(clients, nodes);
-    }, statisticsInterval)
+    }, cfg.statisticsInterval)
   }
 
   private clientWrite(payload: object) {
