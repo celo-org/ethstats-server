@@ -1,8 +1,3 @@
-import {
-  findIndex,
-  maxBy,
-  minBy
-} from "lodash"
 // @ts-ignore
 import * as d3 from "d3"
 import { Block } from "./interfaces/Block";
@@ -52,12 +47,14 @@ export default class History {
         // We already have a block with this height in collection
 
         // Check if node already checked this block height
-        const propIndex = findIndex(historyBlock.propagTimes, {node: id})
+        const propagationIndex = historyBlock.propagTimes.indexOf(
+          historyBlock.propagTimes.find((p) => p.node === id)
+        )
 
         // Check if node already check a fork with this height
         forkIndex = History.compareForks(historyBlock, block)
 
-        if (propIndex === -1) {
+        if (propagationIndex === -1) {
           // Node didn't submit this block before
           if (forkIndex >= 0 && historyBlock.forks[forkIndex]) {
             // Found fork => update data
@@ -94,21 +91,21 @@ export default class History {
             // Matching fork found => update data
             block.arrived = historyBlock.forks[forkIndex].arrived
 
-            if (forkIndex === historyBlock.propagTimes[propIndex].fork) {
+            if (forkIndex === historyBlock.propagTimes[propagationIndex].fork) {
               // Fork index is the same
-              block.received = historyBlock.propagTimes[propIndex].received
-              block.propagation = historyBlock.propagTimes[propIndex].propagation
+              block.received = historyBlock.propagTimes[propagationIndex].received
+              block.propagation = historyBlock.propagTimes[propagationIndex].propagation
             } else {
               // Fork index is different
-              historyBlock.propagTimes[propIndex].fork = forkIndex
-              historyBlock.propagTimes[propIndex].propagation =
+              historyBlock.propagTimes[propagationIndex].fork = forkIndex
+              historyBlock.propagTimes[propagationIndex].propagation =
                 block.propagation = now - historyBlock.forks[forkIndex].received
             }
 
           } else {
             // No matching fork found => replace old one
-            block.received = historyBlock.propagTimes[propIndex].received
-            block.propagation = historyBlock.propagTimes[propIndex].propagation
+            block.received = historyBlock.propagTimes[propagationIndex].received
+            block.propagation = historyBlock.propagTimes[propagationIndex].propagation
 
             const prevBlock = this.prevMaxBlock()
 
@@ -250,7 +247,9 @@ export default class History {
   private search(
     number: number
   ): BlockWrapper {
-    const index = findIndex(this.blocks, {height: number})
+    const index = this.blocks.indexOf(
+      this.blocks.find((b: BlockWrapper) => b.height === number)
+    )
 
     if (index < 0) {
       return null
@@ -271,7 +270,11 @@ export default class History {
   }
 
   private bestBlock(): BlockWrapper {
-    return maxBy(this.blocks, 'height')
+    return this.blocks[0]
+  }
+
+  private worstBlock(): BlockWrapper {
+    return this.blocks[this.blocks.length - 1]
   }
 
   private bestBlockNumber(): number {
@@ -282,10 +285,6 @@ export default class History {
     }
 
     return 0
-  }
-
-  private worstBlock(): BlockWrapper {
-    return minBy(this.blocks, 'height')
   }
 
   private worstBlockNumber(): number {

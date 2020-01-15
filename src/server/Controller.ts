@@ -234,7 +234,7 @@ export default class Controller {
           trusted.push(validator.signer)
         }
 
-        const search = {id: validator.address}
+        const search = (n: Node) => n.getId() === validator.address
         const index: number = this.nodes.getIndex(search)
         const node: Node = this.nodes.getNodeOrNew(search, validator)
 

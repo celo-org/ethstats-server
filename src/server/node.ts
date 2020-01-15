@@ -1,7 +1,3 @@
-import {
-  isEqual,
-  result
-} from "lodash"
 import { cfg, trusted } from "./utils/config"
 import { Stats } from "./interfaces/Stats";
 import { Block } from "./interfaces/Block";
@@ -16,6 +12,7 @@ import { Uptime } from "./interfaces/Uptime";
 import { NodeStats } from "./interfaces/NodeStats";
 import { NodeDetails } from "./interfaces/NodeDetails";
 import { NodeInformation } from "./interfaces/NodeInformation";
+import deepEqual from "deep-equal";
 
 export default class Node {
 
@@ -128,7 +125,7 @@ export default class Node {
       this.info = nodeInformation.stats.info
 
       if (nodeInformation.stats.info.canUpdateHistory) {
-        this.info.canUpdateHistory = result(nodeInformation.stats, 'info.canUpdateHistory', false)
+        this.info.canUpdateHistory = nodeInformation.stats.info.canUpdateHistory || false
       }
     }
 
@@ -156,6 +153,14 @@ export default class Node {
 
   public setValidatorElected(elected: boolean) {
     this.validatorData.elected = elected;
+  }
+
+  public getSpark() {
+    return this.spark;
+  }
+
+  public getId(): string {
+    return this.id
   }
 
   public setValidatorRegistered(registered: boolean) {
@@ -225,8 +230,8 @@ export default class Node {
     if (block && !isNaN(block.number)) {
 
       if (
-        !isEqual(propagationHistory, this.propagationHistory) ||
-        !isEqual(block, this.stats.block)
+        !deepEqual(propagationHistory, this.propagationHistory) ||
+        !deepEqual(block, this.stats.block)
       ) {
         if (
           block.number !== this.stats.block.number ||
@@ -278,7 +283,7 @@ export default class Node {
     callback: { (err: Error | string, basicStats: BasicStatsResponse | null): void }
   ) {
     if (stats) {
-      if (!isEqual(stats,
+      if (!deepEqual(stats,
         {
           active: this.stats.active,
           mining: this.stats.mining,
@@ -437,7 +442,7 @@ export default class Node {
     propagationHistory: number[]
   ) {
     // anything new?
-    if (isEqual(propagationHistory, this.propagationHistory)) {
+    if (deepEqual(propagationHistory, this.propagationHistory)) {
       // no, nothing to set
       return false
     }
