@@ -209,7 +209,11 @@ export default class Server {
 
           const id = proof.address
 
-          this.controller.handleNodeLatency(id, stats.latency)
+          this.controller.handleNodeLatency(
+            id,
+            // todo: make node send this as number instead of string
+            parseInt(String(stats.latency))
+          )
         }
       })
 
