@@ -13,6 +13,7 @@ import { Block } from "./interfaces/Block";
 import { NodeInformation } from "./interfaces/NodeInformation";
 import { Histogram } from "./interfaces/Histogram";
 import { debounce } from "debounce"
+import { cfg } from "./utils/config";
 
 export default class Collection {
 
@@ -254,7 +255,7 @@ export default class Collection {
       this.debounced = debounce(() => {
           this.history.getCharts()
         },
-        500
+        cfg.chartDebounceInterval
       )
     }
 
