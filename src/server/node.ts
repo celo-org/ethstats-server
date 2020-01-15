@@ -121,7 +121,7 @@ export default class Node {
     nodeInformation: NodeInformation,
     callback: { (err: Error | string, nodeInfo: NodeInfo): void }
   ) {
-    if (nodeInformation.stats.info) {
+    if (nodeInformation.stats && nodeInformation.stats.info) {
       this.info = nodeInformation.stats.info
 
       if (nodeInformation.stats.info.canUpdateHistory) {
