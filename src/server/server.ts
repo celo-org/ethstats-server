@@ -7,8 +7,8 @@ import * as primusEmit from "primus-emit"
 import * as primusSparkLatency from "primus-spark-latency"
 import Controller from "./Controller";
 import { createServer } from "http"
-import expressConfig from "./expressConfig"
-import routes from "./routes";
+import { expressConfig } from "./expressConfig"
+import { routes } from "./routes";
 import { cfg } from "./utils/config"
 import { Proof } from "./interfaces/Proof";
 import { NodeResponseLatency } from "./interfaces/NodeResponseLatency";

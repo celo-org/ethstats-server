@@ -1,6 +1,6 @@
 import express from "express";
 
-const routes = express.Router()
+export const routes = express.Router()
 
 routes.get('/', (
   req: express.Request,
@@ -63,5 +63,3 @@ routes.use((
     error: {}
   })
 })
-
-export default routes
