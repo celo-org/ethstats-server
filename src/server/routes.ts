@@ -25,6 +25,23 @@ app.get('/', (
   res.render('index')
 })
 
+app.get('/memory', (
+  req: express.Request,
+  res: express.Response
+) => {
+  const mem = process.memoryUsage()
+
+  res.set('Content-Type', 'text/html');
+  res.send(Buffer.from(`
+<div>
+    <div>rss: ${(mem.rss / 1024 / 1024).toFixed(2)}mb</div>
+    <div>heapUsed: ${(mem.heapUsed / 1024 / 1024).toFixed(2)}mb</div>
+    <div>heapTotal: ${(mem.heapTotal / 1024 / 1024).toFixed(2)}mb</div>
+</div>
+`
+  ))
+})
+
 // catch 404 and forward to error handler
 app.use((
   req: express.Request,
