@@ -34,6 +34,7 @@ export default class Server {
   private readonly controller: Controller;
 
   constructor() {
+
     const server = createServer(routes)
 
     server.headersTimeout = cfg.headersTimeout

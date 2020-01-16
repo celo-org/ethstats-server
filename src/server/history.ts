@@ -13,7 +13,6 @@ import { cfg } from "./utils/config";
 export default class History {
 
   private blocks: BlockWrapper[] = []
-  private callback: { (err: Error | string, chartData: ChartData): void } = null
 
   public add(
     block: Block,
@@ -124,7 +123,13 @@ export default class History {
           }
         }
 
-        if (trusted && !History.compareBlocks(historyBlock.block, historyBlock.forks[forkIndex])) {
+        if (
+          trusted &&
+          !History.compareBlocks(
+            historyBlock.block,
+            historyBlock.forks[forkIndex]
+          )
+        ) {
           // If source is trusted update the main block
           historyBlock.forks[forkIndex].trusted = trusted
           historyBlock.block = historyBlock.forks[forkIndex]
@@ -392,13 +397,9 @@ export default class History {
       })
   }
 
-  public setCallback(
-    callback: { (err: Error | string, chartData: ChartData): void }
+  public getCharts(
+    callback: { (err: Error | string, charts: ChartData): void }
   ): void {
-    this.callback = callback
-  }
-
-  public getCharts(): void {
     const chartHistory = this.blocks
       .slice(0, cfg.maxBins)
       .map((blockWrapper: BlockWrapper): {
@@ -423,7 +424,7 @@ export default class History {
         }
       })
 
-    this.callback(null, {
+    callback(null, {
       height: chartHistory.map((h) => h.height),
       blocktime: padArray(chartHistory.map((h) => h.blocktime), cfg.maxBins, 0),
       avgBlocktime: this.getAvgBlocktime(),

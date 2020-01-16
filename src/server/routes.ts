@@ -1,12 +1,18 @@
 import express from "express"
-import * as path from "path"
+import path from "path"
 import * as bodyParser from "body-parser";
+import compression from "compression"
+import { cfg } from "./utils/config";
 
 const app = express()
 
 // view engine setup
 app.set('views', path.join(__dirname, '../client/views'))
 app.set('view engine', 'jade')
+
+if (cfg.compression) {
+  app.use(compression())
+}
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended: false}))
