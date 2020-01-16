@@ -26,10 +26,9 @@ export default class History {
     let changed = false
 
     if (
-      block &&
-      block.number && block.uncles &&
-      block.transactions && block.difficulty &&
-      block.number >= 0
+      block && block.uncles &&
+      !isNaN(block.number) && block.number >= 0 &&
+      block.transactions && block.difficulty
     ) {
       const historyBlock: BlockWrapper = this.search(block.number)
       let forkIndex = -1
