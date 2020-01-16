@@ -173,7 +173,13 @@ export default class Controller {
         } else if (updatedStats) {
 
           // TODO: Change this and built this into a real data model
-          delete (updatedStats.block.validators)
+          // TODO: THIS IS A HACK!
+
+          // @ts-ignore
+          updatedStats.block.validators.elected = updatedStats.block.validators.elected ? updatedStats.block.validators.elected.length : 0
+          // @ts-ignore
+          updatedStats.block.validators.registered = updatedStats.block.validators.registered ? updatedStats.block.validators.registered.length : 0
+
           delete (updatedStats.block.transactions)
 
           this.clientWrite({

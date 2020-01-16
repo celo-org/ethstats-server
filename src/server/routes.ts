@@ -1,31 +1,15 @@
-import express from "express"
-import path from "path"
-import * as bodyParser from "body-parser";
-import compression from "compression"
-import { cfg } from "./utils/config";
+import express from "express";
 
-const app = express()
+const routes = express.Router()
 
-// view engine setup
-app.set('views', path.join(__dirname, '../client/views'))
-app.set('view engine', 'jade')
-
-if (cfg.compression) {
-  app.use(compression())
-}
-
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended: false}))
-app.use(express.static(path.join(__dirname, '../../dist')))
-
-app.get('/', (
+routes.get('/', (
   req: express.Request,
   res: express.Response
 ) => {
   res.render('index')
 })
 
-app.get('/memory', (
+routes.get('/memory', (
   req: express.Request,
   res: express.Response
 ) => {
@@ -44,7 +28,7 @@ app.get('/memory', (
 })
 
 // catch 404 and forward to error handler
-app.use((
+routes.use((
   req: express.Request,
   res: express.Response,
   next: express.NextFunction
@@ -55,7 +39,7 @@ app.use((
 })
 
 // error handlers
-app.use((
+routes.use((
   err: any,
   req: express.Request,
   res: express.Response
@@ -68,7 +52,7 @@ app.use((
 })
 
 // production error handler
-app.use((
+routes.use((
   err: any,
   req: express.Request,
   res: express.Response
@@ -80,4 +64,4 @@ app.use((
   })
 })
 
-export default app
+export default routes
