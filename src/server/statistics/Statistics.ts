@@ -71,7 +71,7 @@ export class Statistics {
       '\n=================================================================='
     ]
 
-    return output.join()
+    return output.join('')
   }
 
   print(clients: number, nodes: number): void {
