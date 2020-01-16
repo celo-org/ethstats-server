@@ -37,6 +37,7 @@ app.get('/memory', (
     <div>rss: ${(mem.rss / 1024 / 1024).toFixed(2)}mb</div>
     <div>heapUsed: ${(mem.heapUsed / 1024 / 1024).toFixed(2)}mb</div>
     <div>heapTotal: ${(mem.heapTotal / 1024 / 1024).toFixed(2)}mb</div>
+    <div>external: ${(mem.external / 1024 / 1024).toFixed(2)}mb</div>
 </div>
 `
   ))
