@@ -176,7 +176,11 @@ export default class Server {
           this.controller.handleNodeBlock(id, spark.address.ip, stats.block)
 
         } else {
-          console.error('API', 'BLK', 'Invalid Block message:', stats)
+          console.error(
+            'API', 'BLK',
+            'Invalid Block message:',
+            stats
+          )
         }
       })
 
@@ -282,6 +286,10 @@ export default class Server {
 
       })
     })
+
+    this.api.on('disconnection', (spark: Primus.spark): void => {
+      deleteSpark(spark)
+    });
   }
 
   private initClient(): void {
@@ -314,6 +322,10 @@ export default class Server {
       })
 
     })
+
+    this.client.on('disconnection', (spark: Primus.spark): void => {
+      deleteSpark(spark)
+    });
   }
 
   public init(): void {
