@@ -1,5 +1,5 @@
 import assert from "assert"
-import Node from "../../src/server/node";
+import Node from "../../src/server/Node";
 import { NodeInformation } from "../../src/server/interfaces/NodeInformation";
 import Nodes from "../../src/server/Nodes";
 
