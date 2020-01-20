@@ -67,7 +67,7 @@ export default class Controller {
     // print statistics
     setInterval(() => {
       let clients = 0
-      this.client.forEach(() => clients++);
+      // this.client.forEach(() => clients++);
 
       let nodes = 0;
       this.api.forEach(() => nodes++);
