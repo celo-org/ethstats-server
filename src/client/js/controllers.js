@@ -107,11 +107,14 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
     .on('reconnecting', function reconnecting (opts) {
       console.log('We are scheduling a reconnect operation', opts);
     })
-    .on('broadcast', function (data) {
+    .on('b', function (data) {
       $scope.$apply(socketAction(data.action, data.data));
     })
     .on('init', function (data) {
-      $scope.$apply(socketAction("init", data.nodes));
+      $scope.$apply(socketAction("init", data));
+    })
+    .on('charts', function (data) {
+      $scope.$apply(socketAction("charts", data));
     })
     .on('client-latency', function (data) {
       $scope.latency = data.latency;

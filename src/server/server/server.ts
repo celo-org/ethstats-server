@@ -1,4 +1,5 @@
 import '../utils/logger'
+import io from "socket.io"
 // @ts-ignore
 import Primus from "primus"
 // @ts-ignore
@@ -28,12 +29,11 @@ import { Directions } from "../statistics/Directions";
 import { IDictionary } from "../interfaces/IDictionary";
 import { isInputValid } from "../utils/isInputValid";
 import { deleteSpark } from "../utils/deleteSpark";
-import io, { Socket } from "socket.io"
 
 export default class Server {
 
   private readonly api: Primus
-  private readonly client: Primus
+  private readonly client: io.Server
   private readonly danglingConnections: IDictionary = {}
   private readonly controller: Controller;
 
@@ -44,19 +44,18 @@ export default class Server {
       res: express.Response
     ) => {
       res.set('Content-Type', 'text/html');
-      res.send(Buffer.from(
-        `
-        <pre>${JSON.stringify(cfg, null, 2)}</pre>
-        `
-      ))
+      res.send(
+        Buffer.from(
+          `<pre>${JSON.stringify(cfg, null, 2)}</pre>`
+        )
+      )
     })
 
     expressConfig.get('/stats', (
       req: express.Request,
       res: express.Response
     ) => {
-      let clients = 0
-      this.client.forEach(() => clients++);
+      const clients = Object.keys(this.client.sockets.connected).length
 
       let nodes = 0;
       this.api.forEach(() => nodes++);
@@ -67,11 +66,9 @@ export default class Server {
       );
 
       res.set('Content-Type', 'text/html');
-      res.send(Buffer.from(
-        `
-        <pre>${stats}</pre>
-        `
-      ))
+      res.send(
+        Buffer.from(`<pre>${stats}</pre>`)
+      )
     })
 
     expressConfig.use(routes)
@@ -95,8 +92,13 @@ export default class Server {
       }
     })
 
-    this.client = io(server)
-    this.client.path('/server')
+    this.client = io(server, {
+      path: '/client',
+      transports: ['websocket'],
+      cookie: false,
+      perMessageDeflate: cfg.compression,
+      httpCompression: cfg.compression
+    })
 
     this.controller = new Controller(
       this.api,
@@ -285,39 +287,37 @@ export default class Server {
   }
 
   private initClient(): void {
-    this.client.on('connection', (socket: Socket): void => {
-      this.controller.statistics.add(Sides.Client, Directions.In)
-
-      console.success(
-        'API', 'CON', 'Client Open:',
-        socket.conn.remoteAddress, `'${socket.id}'`
-      )
-
-      socket.on('ready', (): void => {
+    this.client
+      .on('connection', (socket: io.Socket): void => {
         this.controller.statistics.add(Sides.Client, Directions.In)
 
-        const id = socket.id
+        console.success(
+          'API', 'CON', 'Client Open:',
+          socket.conn.remoteAddress, `'${socket.id}'`
+        )
 
-        this.controller.handleClientReady(id, socket)
+        socket
+          .once('ready', (): void => {
+            this.controller.statistics.add(Sides.Client, Directions.In)
+            const id = socket.id
+
+            this.controller.handleClientReady(id, socket)
+          })
+          .on('client-pong', (data: ClientPong): void => {
+            this.controller.statistics.add(Sides.Client, Directions.In)
+
+            this.controller.handleClientPong(data, socket)
+          })
+          .once('error', (reason: string): void => {
+            const id = socket.id;
+            console.error(reason)
+            this.controller.handleClientEnd(id, socket, reason)
+          })
+          .once('disconnecting', (reason: string): void => {
+            const id = socket.id;
+            this.controller.handleClientEnd(id, socket, reason)
+          })
       })
-
-      socket.on('client-pong', (data: ClientPong): void => {
-        this.controller.statistics.add(Sides.Client, Directions.In)
-
-        this.controller.handleClientPong(data, socket)
-      })
-
-      socket.on('end', (): void => {
-        const id = socket.id;
-
-        this.controller.handleClientEnd(id, socket.conn.remoteAddress)
-      })
-
-    })
-
-    this.client.on('disconnection', (spark: Primus.spark): void => {
-      deleteSpark(spark)
-    });
   }
 
   public init(): void {

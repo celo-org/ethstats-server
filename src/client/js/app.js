@@ -12,9 +12,15 @@ netStatsApp.run(function($rootScope) {
 /* Services */
 
 netStatsApp.factory('socket', function ($rootScope) {
-	return io(
-		// url: "your url here"
-	);
+	// your url goes here
+	var url = undefined;
+	return io(url, {
+		path: '/client',
+		transports: ['websocket'],
+		cookie: false,
+		perMessageDeflate: true,
+		httpCompression: true,
+	});
 });
 
 netStatsApp.factory('toastr', function ($rootScope) {
