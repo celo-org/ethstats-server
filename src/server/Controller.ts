@@ -77,11 +77,9 @@ export default class Controller {
   }
 
   private clientWrite(payload: object) {
-    this.client.forEach((spark: Primus.spark) => {
-      spark.write(payload)
+    this.client.emit('broadcast', payload);
 
-      this.statistics.add(Sides.Client, Directions.Out)
-    });
+    // this.statistics.add(Sides.Client, Directions.Out)
   }
 
   private handleGetCharts(

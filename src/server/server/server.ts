@@ -28,6 +28,7 @@ import { Directions } from "../statistics/Directions";
 import { IDictionary } from "../interfaces/IDictionary";
 import { isInputValid } from "../utils/isInputValid";
 import { deleteSpark } from "../utils/deleteSpark";
+import io, { Socket } from "socket.io"
 
 export default class Server {
 
@@ -94,17 +95,8 @@ export default class Server {
       }
     })
 
-    this.client = new Primus(server, {
-      transformer: 'websockets',
-      pathname: '/primus',
-      parser: 'JSON',
-      pingInterval: false,
-      compression: cfg.compression,
-      transport: cfg.transport,
-      plugin: {
-        emit: primusEmit
-      }
-    })
+    this.client = io(server)
+    this.client.path('/server')
 
     this.controller = new Controller(
       this.api,
@@ -293,32 +285,32 @@ export default class Server {
   }
 
   private initClient(): void {
-    this.client.on('connection', (spark: Primus.spark): void => {
+    this.client.on('connection', (socket: Socket): void => {
       this.controller.statistics.add(Sides.Client, Directions.In)
 
       console.success(
         'API', 'CON', 'Client Open:',
-        spark.address.ip, `'${spark.id}'`
+        socket.conn.remoteAddress, `'${socket.id}'`
       )
 
-      spark.on('ready', (): void => {
+      socket.on('ready', (): void => {
         this.controller.statistics.add(Sides.Client, Directions.In)
 
-        const id = spark.id
+        const id = socket.id
 
-        this.controller.handleClientReady(id, spark)
+        this.controller.handleClientReady(id, socket)
       })
 
-      spark.on('client-pong', (data: ClientPong): void => {
+      socket.on('client-pong', (data: ClientPong): void => {
         this.controller.statistics.add(Sides.Client, Directions.In)
 
-        this.controller.handleClientPong(data, spark)
+        this.controller.handleClientPong(data, socket)
       })
 
-      spark.on('end', (): void => {
-        const id = spark.id;
+      socket.on('end', (): void => {
+        const id = socket.id;
 
-        this.controller.handleClientEnd(id, spark.address.ip)
+        this.controller.handleClientEnd(id, socket.conn.remoteAddress)
       })
 
     })

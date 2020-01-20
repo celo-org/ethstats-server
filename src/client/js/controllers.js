@@ -93,31 +93,29 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
 
   // Socket listeners
   // ----------------
-
-  socket.on('open', function open() {
-    socket.emit('ready');
-    console.log('The connection has been opened.');
-  })
-    .on('end', function end() {
+  socket
+    .on('connect', function open () {
+      socket.emit('ready');
+      console.log('The connection has been opened.');
+    })
+    .on('end', function end () {
       console.log('Socket connection ended.')
     })
-    .on('error', function error(err) {
+    .on('error', function error (err) {
       console.log(err);
     })
-    .on('reconnecting', function reconnecting(opts) {
+    .on('reconnecting', function reconnecting (opts) {
       console.log('We are scheduling a reconnect operation', opts);
     })
-    .on('data', function incoming(data) {
+    .on('broadcast', function (data) {
       $scope.$apply(socketAction(data.action, data.data));
-    });
-
-  socket.on('init', function (data) {
-    $scope.$apply(socketAction("init", data.nodes));
-  });
-
-  socket.on('client-latency', function (data) {
-    $scope.latency = data.latency;
-  })
+    })
+    .on('init', function (data) {
+      $scope.$apply(socketAction("init", data.nodes));
+    })
+    .on('client-latency', function (data) {
+      $scope.latency = data.latency;
+    })
 
   function socketAction(action, data) {
     // filter data
@@ -285,7 +283,7 @@ netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, so
 
         if (!_.isEqual($scope.lastGasLimit, data.gasLimit) && data.gasLimit.length >= MAX_BINS)
           $scope.lastGasLimit = data.gasLimit;
-        
+
           if (!_.isEqual($scope.lastBlocksTime, data.blocktime) && data.blocktime.length >= MAX_BINS)
           $scope.lastBlocksTime = data.blocktime;
 
