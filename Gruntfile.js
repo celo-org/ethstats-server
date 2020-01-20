@@ -3,8 +3,7 @@ const scripts = [
   'src/client/js/controllers.js',
   'src/client/js/filterFunctions.js',
   'src/client/js/filters.js',
-  'src/client/js/directives.js',
-  'src/client/js/script.js'
+  'src/client/js/directives.js'
 ]
 
 const vendor = [

@@ -1,5 +1,15 @@
 /* Controllers */
-netStatsApp.controller('StatsCtrl', function ($scope, $filter, $localStorage, socket, _, toastr) {
+netStatsApp.controller('StatsCtrl', function (
+  $scope,
+  $filter,
+  $localStorage,
+  socket,
+  _,
+  toastr,
+   // keep them here, or they will not loaded
+  moment,
+  sparkline
+) {
 
   var MAX_BINS = 40;
 
