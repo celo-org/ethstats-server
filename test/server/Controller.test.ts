@@ -14,7 +14,7 @@ describe('Controller', () => {
 
   let controller: Controller;
 
-  beforeEach(() => {
+  before(() => {
     expressConfig.use(routes)
 
     const server = createServer(expressConfig)
