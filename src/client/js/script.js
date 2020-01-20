@@ -1,9 +1,11 @@
 (function() {
-	$('body').on('mouseenter', '[data-toggle="tooltip"]', function( event ) {
-		$(this).tooltip('show');
-	}).on('mouseleave', '[data-toggle="tooltip"]', function( event ) {
-		$(this).tooltip('hide');
-	});
+	$('body')
+		.on('mouseenter', '[data-toggle="tooltip"]', function( event ) {
+			$(this).tooltip('show');
+		})
+		.on('mouseleave', '[data-toggle="tooltip"]', function( event ) {
+			$(this).tooltip('hide');
+		});
 
 	$.fn.sparkline.defaults.bar.height = 63;
 	$.fn.sparkline.defaults.bar.barWidth = 6;
@@ -12,6 +14,7 @@
 		$.fn.sparkline.defaults.bar.barWidth = 4;
 	else if( $('body').width() < 1200 )
 		$.fn.sparkline.defaults.bar.barWidth = 5;
+
 	$.fn.sparkline.defaults.bar.barSpacing = 1;
 	$.fn.sparkline.defaults.bar.tooltipClassname = 'jqstooltip';
 	$.fn.sparkline.defaults.bar.tooltipOffsetX = 0;
