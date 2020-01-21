@@ -65,7 +65,9 @@ netStatsApp.factory('moment', function ($rootScope) {
 });
 
 netStatsApp.factory('sparkline', function ($rootScope) {
-  $('body')
+  var body = $('body');
+
+  body
     .on('mouseenter', '[data-toggle="tooltip"]', function (event) {
       $(this).tooltip('show');
     })
@@ -76,9 +78,9 @@ netStatsApp.factory('sparkline', function ($rootScope) {
   $.fn.sparkline.defaults.bar.height = 63;
   $.fn.sparkline.defaults.bar.barWidth = 6;
 
-  if ($('body').width() < 600) {
+  if (body.width() < 600) {
     $.fn.sparkline.defaults.bar.barWidth = 4;
-  } else if ($('body').width() < 1200) {
+  } else if (body.width() < 1200) {
     $.fn.sparkline.defaults.bar.barWidth = 5;
   }
 
@@ -96,4 +98,3 @@ netStatsApp.factory('sparkline', function ($rootScope) {
 
   return $.fn.sparkline;
 });
-
