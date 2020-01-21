@@ -13,7 +13,7 @@
     "test:cover": "nyc npm test",
     "compile": "npm run compile:client && npm run compile:server",
     "compile:server": "tsc -b ./src/server",
-    "compile:client": "grunt build",
+    "compile:client": "grunt",
     "clean": "grunt clean",
     "watch": "grunt watch",
     "dist": "grunt",
