@@ -8,6 +8,10 @@ var netStatsApp = angular.module('netStatsApp', [
   'ngStorage'
 ]);
 
+netStatsApp.config(function ($rootScopeProvider) {
+  $rootScopeProvider.digestTtl(100);
+});
+
 netStatsApp.run(function ($rootScope) {
   $rootScope.networkName = networkName || 'Ethereum';
   $rootScope.faviconPath = faviconPath || '/favicon-celo.ico';

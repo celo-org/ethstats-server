@@ -88,11 +88,9 @@ netStatsApp.controller('StatsCtrl', function (
     $localStorage.pinned = $scope.pinned;
   };
 
-  /*
-  var timeout = setInterval(function () {
-    $scope.$apply()
-  }, 1000)
-  */
+  setInterval(function () {
+    $scope.$apply();
+  }, 750);
 
   $scope.getNumber = function (num) {
     return new Array(num);
@@ -115,13 +113,13 @@ netStatsApp.controller('StatsCtrl', function (
       console.log('We are scheduling a reconnect operation', opts);
     })
     .on('b', function (data) {
-      $scope.$apply(socketAction(data.action, data.data));
+      socketAction(data.action, data.data);
     })
     .on('init', function (data) {
-      $scope.$apply(socketAction('init', data));
+      socketAction('init', data);
     })
     .on('charts', function (data) {
-      $scope.$apply(socketAction('charts', data));
+      socketAction('charts', data);
     })
     .on('client-latency', function (data) {
       $scope.latency = data.latency;
@@ -428,8 +426,6 @@ netStatsApp.controller('StatsCtrl', function (
         handleClientPing(data);
         break;
     }
-
-    // $scope.$apply();
   }
 
   function findIndex (search) {
