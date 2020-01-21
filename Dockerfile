@@ -7,7 +7,7 @@ ENV NODE_ENV=production
 
 RUN npm install
 RUN npm install -g grunt-cli typescript
-RUN grunt build --configPath="src/client/js/celoConfig.js"
+RUN grunt --configPath="src/client/js/celoConfig.js"
 RUN npm run compile:server
 RUN rm -rf ./src
 
