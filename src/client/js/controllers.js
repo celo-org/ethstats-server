@@ -453,15 +453,13 @@ netStatsApp.controller('StatsCtrl', function (
 
   function updateBestBlock () {
     if ($scope.nodes.length) {
-      var bestBlock = _.maxBy($scope.nodes, function (node) {
+      var bestStats = _.maxBy($scope.nodes, function (node) {
         return parseInt(node.stats.block.number);
-      }).stats.block.number;
+      }).stats;
 
-      if (bestBlock !== $scope.bestBlock) {
-        $scope.bestBlock = bestBlock;
-        $scope.bestStats = _.maxBy($scope.nodes, function (node) {
-          return parseInt(node.stats.block.number);
-        }).stats;
+      if (bestStats.block.number > $scope.bestBlock) {
+        $scope.bestBlock = bestStats.block.number;
+        $scope.bestStats = bestStats;
 
         $scope.lastBlock = $scope.bestStats.block.arrived;
         $scope.lastDifficulty = $scope.bestStats.block.difficulty;
